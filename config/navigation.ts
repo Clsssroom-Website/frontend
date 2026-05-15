@@ -1,18 +1,18 @@
-import { LayoutDashboard, Users, BookOpen, BarChart, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, BarChart, Settings, ClipboardList } from 'lucide-react';
 
-export const sidebarLinks = [
+export const teacherLinks = [
   {
     label: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    label: 'Users',
+    label: 'Manage Users',
     href: '/users',
     icon: Users,
   },
   {
-    label: 'Courses',
+    label: 'Manage Courses',
     href: '/courses',
     icon: BookOpen,
   },
@@ -20,6 +20,29 @@ export const sidebarLinks = [
     label: 'Reports',
     href: '/reports',
     icon: BarChart,
+  },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: Settings,
+  },
+];
+
+export const studentLinks = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    label: 'My Courses',
+    href: '/courses',
+    icon: BookOpen,
+  },
+  {
+    label: 'My Assignments',
+    href: '/assignments',
+    icon: ClipboardList,
   },
   {
     label: 'Settings',

@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+
+type Role = "student" | "teacher";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,10 +38,19 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.message ?? "Đăng nhập thất bại! Vui lòng thử lại.");
       } else {
+        const token = data?.data?.token as string | undefined;
+        const role = (data?.data?.user?.role as Role | undefined) ?? "student";
+        const redirectTo = role === "teacher" ? "/users" : "/courses";
+
+        if (!token) {
+          setError("Không nhận được token. Vui lòng đăng nhập lại.");
+          return;
+        }
+
         setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
-        // Lưu token (nếu cần)
-        localStorage.setItem("token", data.data.token);
-        setTimeout(() => router.push("/"), 1500);
+        localStorage.setItem("token", token);
+        Cookies.set("token", token, { sameSite: "lax" });
+        router.replace(redirectTo);
       }
     } catch {
       setError("Không thể kết nối tới máy chủ. Vui lòng kiểm tra backend.");

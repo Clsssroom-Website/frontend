@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { sidebarLinks } from "@/config/navigation";
+import { teacherLinks, studentLinks } from "@/config/navigation";
 import { GraduationCap, X } from "lucide-react";
 import clsx from "clsx";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,6 +16,20 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [role] = useState<"student" | "teacher">(() => {
+    const token = Cookies.get("token");
+    if (!token) {
+      return "student";
+    }
+    try {
+      const decoded = jwtDecode<{ role?: "student" | "teacher" }>(token);
+      return decoded.role === "teacher" ? "teacher" : "student";
+    } catch {
+      return "student";
+    }
+  });
+
+  const links = role === "teacher" ? teacherLinks : studentLinks;
 
   return (
     <>
@@ -45,7 +62,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
             Menu
           </div>
-          {sidebarLinks.map((link) => {
+          {links.map((link) => {
             const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
             const Icon = link.icon;
 
