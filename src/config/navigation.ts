@@ -20,6 +20,11 @@ export const studentLinks = [
     icon: LayoutDashboard,
   },
   {
+    label: 'My Classes',
+    href: '/student/classes',
+    icon: BookOpen,
+  },
+  {
     label: 'Settings',
     href: '/student/settings',
     icon: Settings,

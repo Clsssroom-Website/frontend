@@ -3,8 +3,8 @@ import MainLayout from "./layout/MainLayout";
 import LoginPage from "./pages/auth/Login";
 import RegisterPage from "./pages/auth/Register";
 import DashboardPage from "./pages/student/dashboard/Dashboard";
-import ClassroomsPage from "./pages/teacher/classes/Classes";
-import ClassroomDetail from "./pages/teacher/classes/ClassDetail";
+import ClassroomsPage from "./pages/classes/Classes";
+import ClassroomDetail from "./pages/classes/ClassDetail";
 import SettingsPage from "./pages/student/settings/Settings";
 import ReportsPage from "./pages/teacher/reports/Reports";
 
@@ -23,6 +23,11 @@ function App() {
           />
           <Route path="/teacher/reports" element={<ReportsPage />} />
           <Route path="/student/dashboard" element={<DashboardPage />} />
+          <Route path="/student/classes" element={<ClassroomsPage />} />
+          <Route
+            path="/student/classes/:classId"
+            element={<ClassroomDetail />}
+          />
           <Route path="/student/settings" element={<SettingsPage />} />
         </Route>
       </Routes>

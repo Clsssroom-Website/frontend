@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import { Settings, Share2, MoreVertical, Video, Copy, MessageSquare, Edit3, Menu, FileText, Users } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 
 interface Classroom {
   classId: string;
@@ -18,6 +19,18 @@ export default function ClassroomDetail() {
   const { classId } = useParams();
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [activeTab, setActiveTab] = useState("stream");
+
+  // Role State
+  const [role] = useState<"student" | "teacher">(() => {
+    const token = Cookies.get("token");
+    if (!token) return "student";
+    try {
+      const decoded = jwtDecode<{ role?: "student" | "teacher" }>(token);
+      return decoded.role === "teacher" ? "teacher" : "student";
+    } catch {
+      return "student";
+    }
+  });
 
   useEffect(() => {
     const fetchClassroom = async () => {
@@ -44,7 +57,7 @@ export default function ClassroomDetail() {
       {/* HEADER BANNER */}
       <div className="max-w-6xl mx-auto px-4 pt-6">
         <div className="h-48 rounded-2xl bg-slate-800 relative overflow-hidden flex flex-col justify-end p-6 text-white">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0"></div>
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent z-0"></div>
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511649475669-e288648b233a?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
           
           <div className="relative z-10 flex justify-between items-end w-full">
@@ -67,7 +80,7 @@ export default function ClassroomDetail() {
             { id: "stream", label: "Bảng tin", icon: <Menu size={18} /> },
             { id: "people", label: "Danh sách sinh viên", icon: <Users size={18} /> },
             { id: "classwork", label: "Bài tập", icon: <FileText size={18} /> },
-            { id: "grades", label: "Quản lí điểm số", icon: <Edit3 size={18} /> },
+            ...(role === "teacher" ? [{ id: "grades", label: "Quản lí điểm số", icon: <Edit3 size={18} /> }] : []),
           ].map(tab => (
             <button
                key={tab.id}
@@ -128,7 +141,7 @@ export default function ClassroomDetail() {
           </div>
 
           {/* Sample Posts */}
-          {[1, 2].map((post, idx) => (
+          {[1, 2].map((_, idx) => (
             <div key={idx} className="border border-gray-200 rounded-xl p-4 shadow-sm">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
