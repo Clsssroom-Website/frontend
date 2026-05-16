@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import { Settings, Share2, MoreVertical, Video, Copy, MessageSquare, Edit3, Menu, FileText, Users } from "lucide-react";
-import { jwtDecode } from "jwt-decode";
+import { getUserRole } from "../../utils/auth";
 
 interface Classroom {
   classId: string;
@@ -21,16 +21,7 @@ export default function ClassroomDetail() {
   const [activeTab, setActiveTab] = useState("stream");
 
   // Role State
-  const [role] = useState<"student" | "teacher">(() => {
-    const token = Cookies.get("token");
-    if (!token) return "student";
-    try {
-      const decoded = jwtDecode<{ role?: "student" | "teacher" }>(token);
-      return decoded.role === "teacher" ? "teacher" : "student";
-    } catch {
-      return "student";
-    }
-  });
+  const [role] = useState<"student" | "teacher">(() => getUserRole());
 
   useEffect(() => {
     const fetchClassroom = async () => {

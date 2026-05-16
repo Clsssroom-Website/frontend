@@ -2,6 +2,11 @@ import { LayoutDashboard, BookOpen, BarChart, Settings } from 'lucide-react';
 
 export const teacherLinks = [
   {
+    label: 'Dashboard',
+    href: '/teacher/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
     label: 'Manage Classes',
     href: '/teacher/classes',
     icon: BookOpen,
