@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { CreateClassModal } from "../../components/classes/CreateClassModal";
 import { JoinClassModal } from "../../components/classes/JoinClassModal";
 import { ClassroomCard } from "../../components/classes/ClassroomCard";
@@ -11,12 +10,9 @@ export default function ClassroomsPage() {
   const { 
     loading, role, searchQuery, setSearchQuery, 
     statusFilter, setStatusFilter, filteredClasses, 
-    fetchClasses, deleteClass 
+    deleteClass, activeModal, openActionModal, 
+    closeActionModal, handleActionSuccess 
   } = useClasses();
-
-  // Modal State
-  const [showModal, setShowModal] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -27,7 +23,7 @@ export default function ClassroomsPage() {
         </div>
         <ClassroomActionButton 
           role={role} 
-          onClick={() => role === "teacher" ? setShowModal(true) : setShowJoinModal(true)} 
+          onClick={openActionModal} 
         />
       </div>
 
@@ -51,22 +47,16 @@ export default function ClassroomsPage() {
         </div>
       )}
 
-      {/* IMPORTED MODAL COMPONENT */}
+      {/* MODALS - Controlled by Facade */}
       <CreateClassModal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-        onSuccess={() => {
-          setShowModal(false);
-          fetchClasses();
-        }} 
+        isOpen={activeModal === "create"} 
+        onClose={closeActionModal} 
+        onSuccess={handleActionSuccess} 
       />
       <JoinClassModal
-        isOpen={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
-        onSuccess={() => {
-          setShowJoinModal(false);
-          fetchClasses();
-        }}
+        isOpen={activeModal === "join"}
+        onClose={closeActionModal}
+        onSuccess={handleActionSuccess}
       />
     </div>
   );

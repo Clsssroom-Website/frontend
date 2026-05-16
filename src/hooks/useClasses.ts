@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import Cookies from "js-cookie";
+import { classroomService } from "../services/classroomService";
 import { getUserRole } from "../utils/auth";
 import type { Classroom } from "../pages/classes/types";
-
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 export function useClasses() {
   const [classes, setClasses] = useState<Classroom[]>([]);
@@ -11,23 +9,16 @@ export function useClasses() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   
+  // Modal Facade State
+  const [activeModal, setActiveModal] = useState<"create" | "join" | null>(null);
+  
   const role = useMemo(() => getUserRole(), []);
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
     try {
-      const token = Cookies.get("token");
-      const endpoint = role === "teacher" 
-        ? `${API_BASE}/api/v1/classes` 
-        : `${API_BASE}/api/v1/students/classes`;
-        
-      const res = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setClasses(data.data);
-      }
+      const data = await classroomService.getAll(role);
+      setClasses(data);
     } catch (error) {
       console.error("Failed to fetch classes", error);
     } finally {
@@ -43,15 +34,25 @@ export function useClasses() {
   const deleteClass = useCallback(async (classId: string) => {
     if (!confirm("Are you sure you want to delete this class?")) return;
     try {
-      const token = Cookies.get("token");
-      await fetch(`${API_BASE}/api/v1/classes/${classId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await classroomService.delete(classId);
       await fetchClasses();
     } catch (error) {
       console.error("Failed to delete class", error);
     }
+  }, [fetchClasses]);
+
+  // Facade Methods for UI
+  const openActionModal = useCallback(() => {
+    setActiveModal(role === "teacher" ? "create" : "join");
+  }, [role]);
+
+  const closeActionModal = useCallback(() => {
+    setActiveModal(null);
+  }, []);
+
+  const handleActionSuccess = useCallback(() => {
+    setActiveModal(null);
+    fetchClasses();
   }, [fetchClasses]);
 
   const filteredClasses = useMemo(() => {
@@ -68,7 +69,6 @@ export function useClasses() {
   }, [classes, searchQuery, statusFilter]);
 
   return {
-    classes,
     loading,
     role,
     searchQuery,
@@ -76,7 +76,11 @@ export function useClasses() {
     statusFilter,
     setStatusFilter,
     filteredClasses,
-    fetchClasses,
-    deleteClass
+    deleteClass,
+    // Facade Exports
+    activeModal,
+    openActionModal,
+    closeActionModal,
+    handleActionSuccess
   };
 }
