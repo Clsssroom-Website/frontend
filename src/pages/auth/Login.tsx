@@ -37,7 +37,7 @@ export default function LoginPage() {
       } else {
         const token = data?.data?.token as string | undefined;
         const role = (data?.data?.user?.role as Role | undefined) ?? "student";
-        const redirectTo = role === "teacher" ? "/teacher/classes" : "/student/dashboard";
+        const redirectTo = role === "teacher" ? "/teacher/dashboard" : "/student/dashboard";
 
         if (!token) {
           setError("Không nhận được token. Vui lòng đăng nhập lại.");
@@ -46,6 +46,11 @@ export default function LoginPage() {
 
         setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
         Cookies.set("token", token, { expires: 7 }); // Expires in 7 days
+
+        // Lưu thông tin user vào localStorage để hiển thị ở Header
+        const userName = data?.data?.user?.name as string | undefined;
+        localStorage.setItem("user_name", userName ?? "");
+        localStorage.setItem("user_role", role);
         
         setTimeout(() => {
           navigate(redirectTo, { replace: true });
