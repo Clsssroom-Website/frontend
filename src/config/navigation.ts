@@ -1,52 +1,28 @@
-import { LayoutDashboard, Users, BookOpen, BarChart, Settings, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, BookOpen, BarChart, Settings } from 'lucide-react';
 
 export const teacherLinks = [
   {
-    label: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    label: 'Manage Users',
-    href: '/users',
-    icon: Users,
-  },
-  {
     label: 'Manage Classes',
-    href: '/classes',
+    href: '/teacher/classes',
     icon: BookOpen,
   },
   {
     label: 'Reports',
-    href: '/reports',
+    href: '/teacher/reports',
     icon: BarChart,
-  },
-  {
-    label: 'Settings',
-    href: '/settings',
-    icon: Settings,
   },
 ];
 
 export const studentLinks = [
   {
     label: 'Dashboard',
-    href: '/dashboard',
+    href: '/student/dashboard',
     icon: LayoutDashboard,
   },
   {
-    label: 'My Courses',
-    href: '/courses',
-    icon: BookOpen,
-  },
-  {
-    label: 'My Assignments',
-    href: '/assignments',
-    icon: ClipboardList,
-  },
-  {
     label: 'Settings',
-    href: '/settings',
+    href: '/student/settings',
     icon: Settings,
-  },
+  }
+
 ];

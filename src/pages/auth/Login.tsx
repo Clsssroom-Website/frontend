@@ -37,7 +37,7 @@ export default function LoginPage() {
       } else {
         const token = data?.data?.token as string | undefined;
         const role = (data?.data?.user?.role as Role | undefined) ?? "student";
-        const redirectTo = role === "teacher" ? "/users" : "/courses";
+        const redirectTo = role === "teacher" ? "/teacher/classes" : "/student/dashboard";
 
         if (!token) {
           setError("Không nhận được token. Vui lòng đăng nhập lại.");
