@@ -1,24 +1,37 @@
-import api from "./api";
+import api from "./api/axiosClient";
 import type { Classroom } from "../pages/classes/types";
 
 export const classroomService = {
   /**
-   * Lấy danh sách lớp học dựa trên role
+   * Lấy danh sách lớp học của người dùng hiện tại
    */
-  async getAll(role: "teacher" | "student"): Promise<Classroom[]> {
-    const endpoint = role === "teacher" ? "/api/v1/classes" : "/api/v1/students/classes";
-    const { data } = await api.get(endpoint);
-    return data.success ? data.data : [];
+  async getClasses(): Promise<Classroom[]> {
+    const data: any = await api.get("/api/v1/classes");
+    // axiosClient interceptor đã trả về trực tiếp response.data, nên payload là data.data
+    return data.data || [];
   },
 
   /**
-   * Xóa một lớp học
+   * Tạo một lớp học mới (Dành cho giáo viên)
    */
-  async delete(classId: string): Promise<void> {
-    await api.delete(`/api/v1/classes/${classId}`);
+  async createClass(payload: Partial<Classroom>): Promise<any> {
+    const data = await api.post("/api/v1/classes", payload);
+    return data;
   },
 
   /**
-   * Có thể thêm các method khác ở đây (create, join, update...)
+   * Tham gia lớp học (Dành cho học sinh)
    */
+  async joinClass(joinCode: string): Promise<any> {
+    const data = await api.post("/api/v1/students/classes/join", { joinCode });
+    return data;
+  },
+
+  /**
+   * Xóa một lớp học (Dành cho giáo viên)
+   */
+  async deleteClass(classId: string): Promise<any> {
+    const data = await api.delete(`/api/v1/classes/${classId}`);
+    return data;
+  },
 };

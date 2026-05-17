@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Cookies from "js-cookie";
+import { classroomService } from "../../services/classroomService";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -9,7 +9,6 @@ interface JoinClassModalProps {
   onSuccess: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 export function JoinClassModal({ isOpen, onClose, onSuccess }: JoinClassModalProps) {
   const [joinCode, setJoinCode] = useState("");
@@ -26,22 +25,13 @@ export function JoinClassModal({ isOpen, onClose, onSuccess }: JoinClassModalPro
 
     setLoading(true);
     try {
-      const token = Cookies.get("token");
-      const res = await fetch(`${API_BASE}/api/v1/students/classes/join`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ joinCode: joinCode.trim() })
-      });
+      const data: any = await classroomService.joinClass(joinCode.trim());
       
-      const data = await res.json();
-      if (res.ok && data.success) {
+      if (data && data.success) {
         toast.success("Successfully joined the classroom!");
         onSuccess();
       } else {
-        toast.error(data.message || "Failed to join classroom. Please check your join code.");
+        toast.error(data?.message || "Failed to join classroom. Please check your join code.");
       }
     } catch (error) {
       console.error("Join class error:", error);

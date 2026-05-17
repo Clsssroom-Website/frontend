@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axiosClient from "../../services/api/axiosClient";
+import { classroomService } from "../../services/classroomService";
 import { X } from "lucide-react";
 
 interface CreateClassModalProps {
@@ -8,7 +8,6 @@ interface CreateClassModalProps {
   onSuccess: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 export function CreateClassModal({ isOpen, onClose, onSuccess }: CreateClassModalProps) {
   const [formData, setFormData] = useState({
@@ -25,7 +24,7 @@ export function CreateClassModal({ isOpen, onClose, onSuccess }: CreateClassModa
     e.preventDefault();
     setCreating(true);
     try {
-      const data: any = await axiosClient.post(`/api/v1/classes`, formData);
+      const data: any = await classroomService.createClass(formData);
       
       if (data.success) {
         setFormData({ className: "", description: "", room: "", topic: "" });
