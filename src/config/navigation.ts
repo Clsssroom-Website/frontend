@@ -16,6 +16,11 @@ export const teacherLinks = [
     href: '/teacher/reports',
     icon: BarChart,
   },
+  {
+    label: 'Settings',
+    href: '/teacher/settings',
+    icon: Settings,
+  },
 ];
 
 export const studentLinks = [

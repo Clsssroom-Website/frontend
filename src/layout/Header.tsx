@@ -32,7 +32,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </button>
         <span className="font-medium text-gray-800 hidden sm:block">
-          Welcome back!
+          Welcome back, <span className="text-indigo-600">{userName}</span>!
         </span>
       </div>
 
@@ -49,9 +49,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
         
         <div className="flex items-center gap-3 cursor-pointer p-1 pr-2 rounded-full hover:bg-gray-50 transition-colors">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-sm">
-            JD
+            {initials}
           </div>
-          <span className="text-sm font-medium text-gray-700 hidden sm:block">John Doe</span>
+          <span className="text-sm font-medium text-gray-700 hidden sm:block">{userName}</span>
         </div>
 
         <button 
