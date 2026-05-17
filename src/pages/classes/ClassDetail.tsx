@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../services/api/axiosClient";
 import { Settings, Share2, MoreVertical, Video, Copy, MessageSquare, Edit3, Menu, FileText, Users } from "lucide-react";
-import { getUserRole } from "../../utils/auth";
+import useAuthStore from "../../store/useAuthStore";
 
 // Tab components
 import StreamTab from "../../components/classes/StreamTab";
@@ -42,7 +42,8 @@ export default function ClassroomDetail() {
   const [activeTab, setActiveTab] = useState("stream");
 
   // Role State
-  const [role] = useState<"student" | "teacher">(() => getUserRole());
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role === "teacher" ? "teacher" : "student";
 
   useEffect(() => {
     const fetchClassroom = async () => {

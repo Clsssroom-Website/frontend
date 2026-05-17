@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import { FileText, Clock, CheckCircle, Upload, AlertCircle } from "lucide-react";
+import axiosClient from "../../../services/api/axiosClient";
+import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
 
 interface Assignment {
   assignmentId: string;
@@ -16,7 +16,6 @@ interface AssignmentsTabProps {
   classId: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -26,18 +25,14 @@ export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const token = Cookies.get("token");
-        const res = await fetch(`${API_BASE}/api/v1/students/classes/${classId}/assignments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) {
+        const data: any = await axiosClient.get(`/api/v1/students/classes/${classId}/assignments`);
+        if (data && data.success) {
           setAssignments(data.data);
         } else {
-          setError(data.message || "Không thể tải danh sách bài tập.");
+          setError(data?.message || "Không thể tải danh sách bài tập.");
         }
-      } catch (err) {
-        setError("Lỗi kết nối. Vui lòng thử lại.");
+      } catch (err: any) {
+        setError(err.message || "Lỗi kết nối. Vui lòng thử lại.");
       } finally {
         setLoading(false);
       }

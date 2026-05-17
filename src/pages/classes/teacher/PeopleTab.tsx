@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
+import axiosClient from "../../../services/api/axiosClient";
 import { Users, Mail, Calendar, AlertCircle } from "lucide-react";
 
 interface Student {
@@ -18,7 +18,6 @@ interface PeopleTabProps {
   classId: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
   const [students, setStudents] = useState<Student[]>([]);
@@ -28,18 +27,14 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = Cookies.get("token");
-        const res = await fetch(`${API_BASE}/api/v1/classes/${classId}/students`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) {
+        const data: any = await axiosClient.get(`/api/v1/classes/${classId}/students`);
+        if (data && data.success) {
           setStudents(data.data);
         } else {
-          setError(data.message || "Không thể tải danh sách học sinh.");
+          setError(data?.message || "Không thể tải danh sách học sinh.");
         }
-      } catch (err) {
-        setError("Lỗi kết nối. Vui lòng thử lại.");
+      } catch (err: any) {
+        setError(err.message || "Lỗi kết nối. Vui lòng thử lại.");
       } finally {
         setLoading(false);
       }

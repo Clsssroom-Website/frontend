@@ -1,14 +1,23 @@
 import { Menu, Search, Bell, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/auth/auth.service";
-import useAuthStore from "../store/useAuthStore";
+import useAuthStore, { type User } from "../store/useAuthStore";
 
 interface HeaderProps {
+  user: User | null;
   onMenuClick: () => void;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ user, onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
+
+  const userName = user?.name || "Người dùng";
+  const initials = userName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   const handleLogout = async () => {
     try {
