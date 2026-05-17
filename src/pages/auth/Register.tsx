@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
+import { authService } from "../../services/auth/auth.service";
+import type { Role } from "../../services/auth/auth.types";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
-  const [role, setRole] = useState<"student" | "teacher">("student");
+  const [role, setRole] = useState<Role>("student");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,31 +27,17 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: role,
-        }),
+      await authService.register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: role,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message ?? "Đăng ký thất bại! Vui lòng thử lại.");
-      } else {
-        setSuccess("Đăng ký thành công! Đang chuyển hướng đến đăng nhập...");
-        setTimeout(() => navigate("/login"), 2000);
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message ?? "Lỗi kết nối. Vui lòng kiểm tra lại mạng!");
-      } else {
-        setError("Lỗi lạ xảy ra!");
-      }
+      setSuccess("Đăng ký thành công! Đang chuyển hướng đến đăng nhập...");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err: any) {
+      setError(err.message ?? "Lỗi lạ xảy ra!");
     } finally {
       setLoading(false);
     }
@@ -73,7 +59,7 @@ export default function RegisterPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-200">
-          
+
           {/* Thông báo lỗi */}
           {error && (
             <div className="mb-4 p-3 rounded-md bg-red-50 border border-red-200">
@@ -93,11 +79,10 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setRole("teacher")}
-                className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${
-                  role === "teacher"
+                className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${role === "teacher"
                     ? "border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600 shadow-sm"
                     : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 shadow-sm"
-                }`}
+                  }`}
               >
                 <span className="text-3xl mb-2">👨‍🏫</span>
                 <span className={`text-sm font-semibold ${role === "teacher" ? "text-indigo-700" : "text-gray-700"}`}>
@@ -108,11 +93,10 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setRole("student")}
-                className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${
-                  role === "student"
+                className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${role === "student"
                     ? "border-indigo-600 bg-indigo-50 ring-2 ring-indigo-600 shadow-sm"
                     : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 shadow-sm"
-                }`}
+                  }`}
               >
                 <span className="text-3xl mb-2">🧑‍🎓</span>
                 <span className={`text-sm font-semibold ${role === "student" ? "text-indigo-700" : "text-gray-700"}`}>

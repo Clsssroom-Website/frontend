@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Cookies from "js-cookie";
+import axiosClient from "../../services/api/axiosClient";
 import { X } from "lucide-react";
 
 interface CreateClassModalProps {
@@ -25,18 +25,9 @@ export function CreateClassModal({ isOpen, onClose, onSuccess }: CreateClassModa
     e.preventDefault();
     setCreating(true);
     try {
-      const token = Cookies.get("token");
-      const res = await fetch(`${API_BASE}/api/v1/classes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const data: any = await axiosClient.post(`/api/v1/classes`, formData);
       
-      const data = await res.json();
-      if (res.ok) {
+      if (data.success) {
         setFormData({ className: "", description: "", room: "", topic: "" });
         onSuccess();
       } else {

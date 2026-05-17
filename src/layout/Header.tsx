@@ -1,6 +1,7 @@
 import { Menu, Search, Bell, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
+import { authService } from "../services/auth/auth.service";
+import useAuthStore from "../store/useAuthStore";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -9,9 +10,15 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    navigate("/login", { replace: true });
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      // Bỏ qua lỗi logout phía server nếu có
+    } finally {
+      useAuthStore.getState().logout();
+      navigate("/login", { replace: true });
+    }
   };
 
   return (

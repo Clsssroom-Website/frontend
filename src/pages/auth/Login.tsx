@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
-
-type Role = "student" | "teacher";
+import { authService } from "../../services/auth/auth.service";
+import useAuthStore from "../../store/useAuthStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -24,39 +21,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-      });
+      const response: any = await authService.login(form.email, form.password);
 
-      const data = await res.json();
+      const token = response?.data?.accessToken;
+      const user = response?.data?.user;
 
-      if (!res.ok) {
-        setError(data.message ?? "Đăng nhập thất bại! Vui lòng thử lại.");
-      } else {
-        const token = data?.data?.token as string | undefined;
-        const role = (data?.data?.user?.role as Role | undefined) ?? "student";
-        const redirectTo = role === "teacher" ? "/teacher/classes" : "/student/dashboard";
-
-        if (!token) {
-          setError("Không nhận được token. Vui lòng đăng nhập lại.");
-          return;
-        }
-
-        setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
-        Cookies.set("token", token, { expires: 7 }); // Expires in 7 days
-        
-        setTimeout(() => {
-          navigate(redirectTo, { replace: true });
-        }, 1200);
+      if (!token || !user) {
+        setError("Không nhận được dữ liệu hợp lệ. Vui lòng thử lại.");
+        return;
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message ?? "Lỗi mạng! Vui lòng kiểm tra kết nối.");
-      } else {
-        setError("Lỗi lạ xảy ra!");
-      }
+
+      useAuthStore.getState().setAuth(user, token);
+      setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
+      
+      setTimeout(() => {
+        const redirectTo = user.role === "teacher" ? "/teacher/classes" : "/student/dashboard";
+        navigate(redirectTo, { replace: true });
+      }, 1200);
+    } catch (err: any) {
+      setError(err.message ?? "Lỗi lạ xảy ra!");
     } finally {
       setLoading(false);
     }

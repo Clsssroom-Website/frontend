@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { teacherLinks, studentLinks } from "../config/navigation";
 import { GraduationCap, X } from "lucide-react";
 import clsx from "clsx";
-import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
+import useAuthStore from "../store/useAuthStore";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,18 +13,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
   
-  const [role] = useState<"student" | "teacher">(() => {
-    const token = Cookies.get("token");
-    if (!token) {
-      return "student";
-    }
-    try {
-      const decoded = jwtDecode<{ role?: "student" | "teacher" }>(token);
-      return decoded.role === "teacher" ? "teacher" : "student";
-    } catch {
-      return "student";
-    }
-  });
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role === "teacher" ? "teacher" : "student";
 
   const links = role === "teacher" ? teacherLinks : studentLinks;
 

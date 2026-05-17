@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Cookies from "js-cookie";
+import axiosClient from "../../services/api/axiosClient";
 import { Settings, Share2, MoreVertical, Video, Copy, MessageSquare, Edit3, Menu, FileText, Users } from "lucide-react";
 import { getUserRole } from "../../utils/auth";
 
@@ -26,11 +26,7 @@ export default function ClassroomDetail() {
   useEffect(() => {
     const fetchClassroom = async () => {
       try {
-        const token = Cookies.get("token");
-        const res = await fetch(`${API_BASE}/api/v1/classes/${classId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
+        const data: any = await axiosClient.get(`/api/v1/classes/${classId}`);
         if (data.success) setClassroom(data.data);
       } catch (error) {
         console.error("Failed to fetch classroom:", error);
