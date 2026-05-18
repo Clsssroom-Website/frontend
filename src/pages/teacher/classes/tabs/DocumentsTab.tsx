@@ -1,10 +1,114 @@
-import { useState, useEffect } from "react";
-import { Upload, FileText, Download, Clock } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Upload, FileText, Download, Clock, Eye } from "lucide-react";
 import UploadDocumentModal from "../../../../components/classes/UploadDocumentModal";
 import { documentService } from "../../../../services/document.service";
 import type { Document } from "../../../../types/document";
 import toast from "react-hot-toast";
 
+// --- Utilities ---
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('vi-VN', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
+
+const formatFileSize = (bytes?: string | number | null) => {
+  if (!bytes) return null;
+  return (Number(bytes) / (1024 * 1024)).toFixed(2) + " MB";
+};
+
+// --- Sub-components ---
+interface DocumentItemProps {
+  doc: Document;
+}
+
+const DocumentItem = ({ doc }: DocumentItemProps) => {
+  const attachment = doc.DocumentAttachments?.[0];
+
+  const handlePreview = async () => {
+    try {
+      const res = await documentService.getDownloadUrl(doc.documentId);
+      if (res.success && res.data) {
+        window.open(res.data, "_blank");
+      }
+    } catch (error) {
+      toast.error("Không thể lấy link tài liệu.");
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const res = await documentService.getDownloadUrl(doc.documentId, "download");
+      if (res.success && res.data) {
+        const link = document.createElement('a');
+        link.href = res.data;
+        link.download = attachment?.fileName || 'download';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      toast.error("Không thể lấy link tải tài liệu.");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl flex-shrink-0">
+          <FileText size={24} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-gray-800 truncate" title={doc.title}>
+            {doc.title}
+          </h3>
+          {doc.description && (
+            <p className="text-sm text-gray-500 truncate mt-0.5" title={doc.description}>
+              {doc.description}
+            </p>
+          )}
+          <div className="flex items-center gap-3 text-xs text-gray-400 mt-1.5">
+            <span className="flex items-center gap-1">
+              <Clock size={12} />
+              {formatDate(doc.uploadTime)}
+            </span>
+            {attachment?.fileSize && (
+              <span className="bg-gray-100 px-2 py-0.5 rounded-full text-gray-500 font-medium">
+                {formatFileSize(attachment.fileSize)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {attachment && (
+        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+          {attachment.fileName?.toLowerCase().endsWith('.pdf') && (
+            <button 
+              onClick={handlePreview}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-lg transition cursor-pointer"
+              title="Xem trước trên trình duyệt"
+            >
+              <Eye size={16} />
+              <span className="hidden sm:inline">Xem trước</span>
+            </button>
+          )}
+          
+          <button 
+            onClick={handleDownload}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow rounded-lg transition cursor-pointer"
+          >
+            <Download size={16} />
+            <span className="hidden sm:inline">Tải về</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Main Component ---
 interface DocumentsTabProps {
   classId: string;
 }
@@ -14,7 +118,7 @@ export default function TeacherDocumentsTab({ classId }: DocumentsTabProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await documentService.getDocumentsByClassId(classId);
@@ -26,31 +130,11 @@ export default function TeacherDocumentsTab({ classId }: DocumentsTabProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [classId]);
 
   useEffect(() => {
     fetchDocuments();
-  }, [classId]);
-
-  const handleUploadSuccess = () => {
-    fetchDocuments();
-  };
-
-  // Hàm helper để parse URL (nếu lưu dạng backend URL)
-  const getFileUrl = (uri: string) => {
-    // Nếu uri là đường dẫn bucket của MinIO, ta có thể xây dựng url API để tải.
-    // Tạm thời hiển thị dưới dạng link tới endpoint public của MinIO hoặc API tải xuống.
-    // Nếu bạn có API endpoint riêng để download, hãy thay thế tại đây.
-    if (uri.startsWith('http')) return uri;
-    return `${import.meta.env.VITE_MINIO_URL || "http://localhost:9000"}/${uri}`;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-  };
+  }, [fetchDocuments]);
 
   return (
     <div>
@@ -76,52 +160,10 @@ export default function TeacherDocumentsTab({ classId }: DocumentsTabProps) {
           <p className="text-sm">Bấm "Upload tài liệu" để chia sẻ tài liệu với học sinh.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {documents.map((doc) => {
-            const attachment = doc.DocumentAttachments?.[0];
-            return (
-              <div key={doc.documentId} className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition group flex flex-col">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                    <FileText size={24} />
-                  </div>
-                  {attachment && (
-                    <a 
-                      href={getFileUrl(attachment.fileUri)} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-50 transition"
-                      title="Tải xuống"
-                    >
-                      <Download size={18} />
-                    </a>
-                  )}
-                </div>
-                
-                <h3 className="font-semibold text-gray-800 line-clamp-1 mb-1" title={doc.title}>
-                  {doc.title}
-                </h3>
-                
-                {doc.description && (
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-grow">
-                    {doc.description}
-                  </p>
-                )}
-                
-                <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} />
-                    {formatDate(doc.uploadTime)}
-                  </span>
-                  {attachment?.fileSize && (
-                    <span className="bg-gray-100 px-2 py-0.5 rounded-full text-gray-500">
-                      {(Number(attachment.fileSize) / (1024 * 1024)).toFixed(2)} MB
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div className="flex flex-col gap-3">
+          {documents.map((doc) => (
+            <DocumentItem key={doc.documentId} doc={doc} />
+          ))}
         </div>
       )}
 
@@ -129,7 +171,7 @@ export default function TeacherDocumentsTab({ classId }: DocumentsTabProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         classId={classId}
-        onUploadSuccess={handleUploadSuccess}
+        onUploadSuccess={fetchDocuments}
       />
     </div>
   );

@@ -1,0 +1,96 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { documentService } from '@/services/document.service';
+import api from '@/config/axiosClient';
+import type { Document } from '@/types/document';
+
+// Mock axiosClient (api)
+vi.mock('@/config/axiosClient', () => ({
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+  },
+}));
+
+describe('documentService', () => {
+  const mockClassId = 'class-123';
+  const mockDocumentId = 'doc-123';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('uploadDocument', () => {
+    it('gọi API upload chính xác và trả về dữ liệu', async () => {
+      const mockFormData = new FormData();
+      mockFormData.append('file', new Blob(['test content']), 'test.pdf');
+      mockFormData.append('classId', mockClassId);
+
+      const mockResponse = {
+        success: true,
+        data: { documentId: mockDocumentId, title: 'test.pdf' } as Document,
+      };
+
+      vi.mocked(api.post).mockResolvedValueOnce(mockResponse);
+
+      const result = await documentService.uploadDocument(mockFormData);
+
+      expect(api.post).toHaveBeenCalledWith('/documents/upload', mockFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('bắn lỗi nếu upload thất bại', async () => {
+      const mockFormData = new FormData();
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('Upload failed'));
+
+      await expect(documentService.uploadDocument(mockFormData)).rejects.toThrow('Upload failed');
+    });
+  });
+
+  describe('getDocumentsByClassId', () => {
+    it('lấy danh sách tài liệu thành công', async () => {
+      const mockResponse = {
+        success: true,
+        data: [{ documentId: 'doc-1', title: 'Doc 1' }] as Document[],
+      };
+
+      vi.mocked(api.get).mockResolvedValueOnce(mockResponse);
+
+      const result = await documentService.getDocumentsByClassId(mockClassId);
+
+      expect(api.get).toHaveBeenCalledWith(`/documents/class/${mockClassId}`);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('getDownloadUrl', () => {
+    it('lấy URL xem trước (không có action download)', async () => {
+      const mockResponse = {
+        success: true,
+        data: 'http://localhost:9000/presigned-preview-url',
+      };
+
+      vi.mocked(api.get).mockResolvedValueOnce(mockResponse);
+
+      const result = await documentService.getDownloadUrl(mockDocumentId);
+
+      expect(api.get).toHaveBeenCalledWith(`/documents/${mockDocumentId}/download`);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('lấy URL tải về (có action download)', async () => {
+      const mockResponse = {
+        success: true,
+        data: 'http://localhost:9000/presigned-download-url',
+      };
+
+      vi.mocked(api.get).mockResolvedValueOnce(mockResponse);
+
+      const result = await documentService.getDownloadUrl(mockDocumentId, 'download');
+
+      expect(api.get).toHaveBeenCalledWith(`/documents/${mockDocumentId}/download?action=download`);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+});

@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layout/MainLayout";
 import LoginPage from "./pages/auth/Login";
 import RegisterPage from "./pages/auth/Register";
-import DashboardPage from "./pages/student/dashboard/Dashboard";
+import StudentDashboard from "./pages/student/dashboard/Dashboard";
+import TeacherDashboard from "./pages/teacher/dashboard/Dashboard";
 import TeacherClasses from "./pages/teacher/classes/TeacherClasses";
 import StudentClasses from "./pages/student/classes/StudentClasses";
 import TeacherClassDetail from "./pages/teacher/classes/ClassDetail";
@@ -31,7 +32,7 @@ function App() {
           <Route element={<MainLayout />}>
             {/* Teacher Routes */}
             <Route element={<RoleGuard allowedRoles={["teacher"]} />}>
-              <Route path="/teacher/dashboard" element={<Navigate to="/teacher/classes" replace />} />
+              <Route path="/teacher/dashboard" element={<TeacherDashboard/>} />
               <Route path="/teacher/classes" element={<TeacherClasses />} />
               <Route path="/teacher/classes/:classId" element={<TeacherClassDetail />} />
               <Route path="/teacher/reports" element={<ReportsPage />} />
@@ -39,8 +40,7 @@ function App() {
 
             {/* Student Routes */}
             <Route element={<RoleGuard allowedRoles={["student"]} />}>
-              <Route path="/dashboard" element={<Navigate to="/student/dashboard" replace />} />
-              <Route path="/student/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard" element={<StudentDashboard/>} />
               <Route path="/student/classes" element={<StudentClasses />} />
               <Route path="/student/classes/:classId" element={<StudentClassDetail />} />
               <Route path="/student/settings" element={<SettingsPage />} />

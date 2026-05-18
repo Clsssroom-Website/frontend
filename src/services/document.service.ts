@@ -28,4 +28,12 @@ export const documentService = {
     const response = await api.get<ApiResponse<Document[]>>(`/documents/class/${classId}`);
     return response as unknown as ApiResponse<Document[]>;
   },
+  /**
+   * Lấy URL để tải xuống file tài liệu an toàn (Presigned URL)
+   */
+  getDownloadUrl: async (documentId: string, action?: string): Promise<ApiResponse<string>> => {
+    const url = action ? `/documents/${documentId}/download?action=${action}` : `/documents/${documentId}/download`;
+    const response = await api.get<ApiResponse<string>>(url);
+    return response as unknown as ApiResponse<string>;
+  },
 };
