@@ -16,7 +16,6 @@ interface AssignmentsTabProps {
   classId: string;
 }
 
-
 export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
