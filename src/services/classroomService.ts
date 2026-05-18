@@ -30,6 +30,7 @@ export const classroomService = {
   /**
    * Xóa một lớp học (Dành cho giáo viên)
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deleteClass(classId: string): Promise<any> {
     const data = await api.delete(`/api/v1/classes/${classId}`);
     return data;
