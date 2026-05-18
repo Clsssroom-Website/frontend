@@ -5,7 +5,7 @@ interface StreamTabProps {
   role: "teacher" | "student";
 }
 
-export default function StreamTab({ classId, role }: StreamTabProps) {
+export default function StreamTab({ role }: StreamTabProps) {
   return (
     <div className="space-y-6">
       {/* Input Box - chỉ teacher mới được đăng thông báo */}

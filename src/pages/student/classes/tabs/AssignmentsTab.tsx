@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../../services/api/axiosClient";
+import axiosClient from "../../../../services/api/axiosClient";
 import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
 
 interface Assignment {

@@ -1,13 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
 import MainLayout from "./layout/MainLayout";
 import LoginPage from "./pages/auth/Login";
 import RegisterPage from "./pages/auth/Register";
 import DashboardPage from "./pages/student/dashboard/Dashboard";
 import TeacherClasses from "./pages/teacher/classes/TeacherClasses";
 import StudentClasses from "./pages/student/classes/StudentClasses";
-import ClassroomDetail from "./pages/classes/ClassDetail";
+import TeacherClassDetail from "./pages/teacher/classes/ClassDetail";
+import StudentClassDetail from "./pages/student/classes/ClassDetail";
 import SettingsPage from "./pages/student/settings/Settings";
 import ReportsPage from "./pages/teacher/reports/Reports";
 
@@ -34,7 +33,7 @@ function App() {
             <Route element={<RoleGuard allowedRoles={["teacher"]} />}>
               <Route path="/teacher/dashboard" element={<Navigate to="/teacher/classes" replace />} />
               <Route path="/teacher/classes" element={<TeacherClasses />} />
-              <Route path="/teacher/classes/:classId" element={<ClassroomDetail />} />
+              <Route path="/teacher/classes/:classId" element={<TeacherClassDetail />} />
               <Route path="/teacher/reports" element={<ReportsPage />} />
             </Route>
 
@@ -43,7 +42,7 @@ function App() {
               <Route path="/dashboard" element={<Navigate to="/student/dashboard" replace />} />
               <Route path="/student/dashboard" element={<DashboardPage />} />
               <Route path="/student/classes" element={<StudentClasses />} />
-              <Route path="/student/classes/:classId" element={<ClassroomDetail />} />
+              <Route path="/student/classes/:classId" element={<StudentClassDetail />} />
               <Route path="/student/settings" element={<SettingsPage />} />
             </Route>
           </Route>

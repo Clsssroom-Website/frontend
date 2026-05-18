@@ -1,5 +1,5 @@
 import api from "./api/axiosClient";
-import type { Classroom } from "../pages/classes/types";
+import type { Classroom } from "../types/classroom";
 
 export const classroomService = {
   /**

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { classroomService } from "../services/classroomService";
-import type { Classroom } from "../pages/classes/types";
+import type { Classroom } from "../types/classroom";
 
 export function useClassroomsData() {
   const [classes, setClasses] = useState<Classroom[]>([]);
