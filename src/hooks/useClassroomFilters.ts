@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { Classroom } from "../pages/classes/types";
+import type { Classroom } from "../types/classroom";
 
 export function useClassroomFilters(classes: Classroom[]) {
   const [searchQuery, setSearchQuery] = useState("");
