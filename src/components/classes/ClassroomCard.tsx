@@ -34,7 +34,7 @@ export function ClassroomCard({ cls, linkTo, actions }: ClassroomCardProps) {
           </div>
           <div className="flex items-center gap-2">
             <Users size={16} className="text-gray-400" />
-            <span>Sĩ số: N/A</span>
+            <span>Sĩ số: {cls.totalStudents ?? "N/A"} học sinh</span>
           </div>
           <div className="flex items-center gap-2">
             <PenBox size={16} className="text-gray-400" />

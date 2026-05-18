@@ -9,4 +9,5 @@ export interface Classroom {
   joinLink: string;
   status: string;
   createdAt: string;
+  totalStudents?: number;
 }
