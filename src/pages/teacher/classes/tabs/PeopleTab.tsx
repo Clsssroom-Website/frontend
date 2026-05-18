@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../../services/api/axiosClient";
+import axiosClient from "../../../../services/api/axiosClient";
 import { Users, Mail, Calendar, AlertCircle } from "lucide-react";
 
 interface Student {

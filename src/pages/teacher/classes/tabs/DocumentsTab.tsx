@@ -1,10 +1,10 @@
-import { Upload, FileText, Download } from "lucide-react";
+import { Upload, FileText } from "lucide-react";
 
 interface DocumentsTabProps {
   classId: string;
 }
 
-export default function TeacherDocumentsTab({ classId }: DocumentsTabProps) {
+export default function TeacherDocumentsTab({ classId: _classId }: DocumentsTabProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">

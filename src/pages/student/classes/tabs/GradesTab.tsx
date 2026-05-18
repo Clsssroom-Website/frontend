@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
+
 import { Award, AlertCircle } from "lucide-react";
 
 interface Grade {
@@ -18,12 +18,12 @@ interface GradesTabProps {
   classId: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
+
 
 export default function StudentGradesTab({ classId }: GradesTabProps) {
-  const [grades, setGrades] = useState<Grade[]>([]);
+  const [grades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     // TODO: Thêm API GET /students/classes/:classId/grades ở backend

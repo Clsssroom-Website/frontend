@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, Users, PenBox } from "lucide-react";
-import type { Classroom } from "../../pages/classes/types";
+import type { Classroom } from "../../types/classroom";
 
 interface ClassroomCardProps {
   cls: Classroom;
