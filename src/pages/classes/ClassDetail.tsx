@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../services/api/axiosClient";
-import { Settings, Share2, MoreVertical, Video, Copy, MessageSquare, Edit3, Menu, FileText, Users } from "lucide-react";
+import { Settings, Share2, MoreVertical,  Copy,  Edit3, Menu, FileText, Users } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 
 // Tab components
@@ -144,7 +144,7 @@ export default function ClassroomDetail() {
           )}
 
           {/* Google Meet Box */}
-          <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+          {/* <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2 text-gray-700 font-medium text-sm">
                 <div className="bg-green-100 p-1.5 rounded-md">
@@ -159,7 +159,7 @@ export default function ClassroomDetail() {
             <button className="w-full py-2 border border-gray-300 text-indigo-600 font-medium rounded-full hover:bg-indigo-50 transition">
               Tham gia
             </button>
-          </div>
+          </div> */}
 
           {/* Thông tin lớp */}
           {classroom.room && (
