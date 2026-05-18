@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FileText, Clock, Users, Paperclip, Pencil, Trash2, ExternalLink } from "lucide-react";
-import axiosClient from "../../../../services/api/axiosClient";
-import type { Assignment } from "../../../../types/assignment";
-import { formatDeadline, isOverdue } from "../../../../utils/dateUtils";
+import axiosClient from "../../../services/api/axiosClient";
+import type { Assignment } from "../../../types/assignment";
+import { formatDeadline, isOverdue } from "../../../utils/dateUtils";
 
 interface AssignmentCardProps {
   assignment: Assignment;

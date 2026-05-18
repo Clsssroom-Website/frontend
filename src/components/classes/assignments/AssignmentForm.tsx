@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { X, Bold, Italic, List, Link as LinkIcon, UploadCloud, ChevronRight } from "lucide-react";
 import { AlertCircle } from "lucide-react";
-import axiosClient from "../../../../services/api/axiosClient";
-import type { Assignment, AttachmentInput } from "../../../../types/assignment";
-import { toDatetimeLocal } from "../../../../utils/dateUtils";
+import axiosClient from "../../../services/api/axiosClient";
+import type { Assignment, AttachmentInput } from "../../../types/assignment";
+import { toDatetimeLocal } from "../../../utils/dateUtils";
 import AttachmentDisplayRow from "./AttachmentDisplayRow";
 
 interface AssignmentFormProps {

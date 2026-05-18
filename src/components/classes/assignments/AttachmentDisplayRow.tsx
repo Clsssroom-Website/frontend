@@ -1,5 +1,5 @@
 import { Paperclip, X } from "lucide-react";
-import type { AttachmentInput } from "../../../../types/assignment";
+import type { AttachmentInput } from "../../../types/assignment";
 
 interface AttachmentDisplayRowProps {
   attachment: AttachmentInput;
