@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { X, Bold, Italic, List, Link as LinkIcon, UploadCloud, ChevronRight } from "lucide-react";
 import { AlertCircle } from "lucide-react";
-import axiosClient from "../../../services/api/axiosClient";
+import { assignmentService } from "../../../services/assignmentService";
+import { uploadService } from "../../../services/uploadService";
 import type { Assignment, AttachmentInput } from "../../../types/assignment";
 import { toDatetimeLocal } from "../../../utils/dateUtils";
 import AttachmentDisplayRow from "./AttachmentDisplayRow";
@@ -43,9 +44,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
     formData.append("file", file);
 
     try {
-      const res: any = await axiosClient.post("/api/v1/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res: any = await uploadService.uploadFile(file);
       if (res.success) {
         setAttachments((prev) => [...prev, { fileName: res.data.data.fileName, fileUrl: res.data.data.fileUrl }]);
       } else {
@@ -78,12 +77,9 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
 
       let res: any;
       if (isEdit) {
-        res = await axiosClient.put(
-          `/api/v1/classes/${classId}/assignments/${editTarget!.assignmentId}`,
-          payload
-        );
+        res = await assignmentService.updateAssignment(classId, editTarget!.assignmentId, payload);
       } else {
-        res = await axiosClient.post(`/api/v1/classes/${classId}/assignments`, payload);
+        res = await assignmentService.createAssignment(classId, payload);
       }
 
       if (res.success) {

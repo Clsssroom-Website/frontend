@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FileText, Clock, Users, Paperclip, Pencil, Trash2, ExternalLink } from "lucide-react";
-import axiosClient from "../../../services/api/axiosClient";
+import { assignmentService } from "../../../services/assignmentService";
 import type { Assignment } from "../../../types/assignment";
 import { formatDeadline, isOverdue } from "../../../utils/dateUtils";
 
@@ -24,9 +24,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
     if (!confirm(`Xóa bài tập "${assignment.title}"?`)) return;
     setDeleting(true);
     try {
-      const res: any = await axiosClient.delete(
-        `/api/v1/classes/${assignment.classId}/assignments/${assignment.assignmentId}`
-      );
+      const res: any = await assignmentService.deleteAssignment(assignment.classId, assignment.assignmentId);
       if (res.success) onDelete(assignment.assignmentId);
       else alert(res.message || "Xóa thất bại.");
     } catch {

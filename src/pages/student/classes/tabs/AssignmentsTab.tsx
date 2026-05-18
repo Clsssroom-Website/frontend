@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../../../services/api/axiosClient";
+import { assignmentService } from "../../../../services/assignmentService";
 import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
 
 interface Assignment {
@@ -24,7 +24,7 @@ export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const data: any = await axiosClient.get(`/api/v1/students/classes/${classId}/assignments`);
+        const data: any = await assignmentService.getAssignments(classId, "student");
         if (data && data.success) {
           setAssignments(data.data);
         } else {

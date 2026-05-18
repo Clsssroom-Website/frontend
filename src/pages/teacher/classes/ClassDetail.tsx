@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axiosClient from "../../../services/api/axiosClient";
+import { classroomService } from "../../../services/classroomService";
 import { Menu, Users, FileText, Edit3 } from "lucide-react";
 
 import ClassDetailLayout from "../../../components/classes/ClassDetailLayout";
@@ -26,7 +26,7 @@ export default function TeacherClassDetail() {
   useEffect(() => {
     const fetchClassroom = async () => {
       try {
-        const data: any = await axiosClient.get(`/api/v1/classes/${classId}`);
+        const data: any = await classroomService.getClassDetail(classId);
         if (data.success) setClassroom(data.data);
       } catch (error) {
         console.error("Failed to fetch classroom:", error);

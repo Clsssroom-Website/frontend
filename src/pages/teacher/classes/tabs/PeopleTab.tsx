@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../../../services/api/axiosClient";
+import { classroomService } from "../../../../services/classroomService";
 import { Users, Mail, Calendar, AlertCircle } from "lucide-react";
 
 interface Student {
@@ -27,7 +27,7 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const data: any = await axiosClient.get(`/api/v1/classes/${classId}/students`);
+        const data: any = await classroomService.getStudents(classId);
         if (data && data.success) {
           setStudents(data.data);
         } else {

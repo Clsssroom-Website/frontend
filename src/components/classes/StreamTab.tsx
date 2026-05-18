@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FileText, MoreVertical, Edit3, Clock } from "lucide-react";
-import axiosClient from "../../services/api/axiosClient";
+import { classroomService } from "../../services/classroomService";
 
 interface StreamTabProps {
   classId: string;
@@ -33,7 +33,7 @@ export default function StreamTab({ classId, role }: StreamTabProps) {
     const fetchStream = async () => {
       try {
         setLoading(true);
-        const response: any = await axiosClient.get(`/api/v1/classes/${classId}/stream`);
+        const response: any = await classroomService.getStream(classId);
         if (response?.success) {
           setStream(response.data);
         }

@@ -35,4 +35,25 @@ export const classroomService = {
     const data = await api.delete(`/api/v1/classes/${classId}`);
     return data;
   },
+
+  /**
+   * Lấy chi tiết lớp học
+   */
+  async getClassDetail(classId: string): Promise<any> {
+    return await api.get(`/api/v1/classes/${classId}`);
+  },
+
+  /**
+   * Lấy danh sách sinh viên của lớp
+   */
+  async getStudents(classId: string): Promise<any> {
+    return await api.get(`/api/v1/classes/${classId}/students`);
+  },
+
+  /**
+   * Lấy danh sách bảng tin (stream)
+   */
+  async getStream(classId: string): Promise<any> {
+    return await api.get(`/api/v1/classes/${classId}/stream`);
+  },
 };

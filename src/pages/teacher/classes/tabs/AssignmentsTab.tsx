@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../../../services/api/axiosClient";
+import { assignmentService } from "../../../../services/assignmentService";
 import { Plus, FileText, AlertCircle } from "lucide-react";
 import type { Assignment } from "../../../../types/assignment";
 import AssignmentCard from "../../../../components/classes/assignments/AssignmentCard";
@@ -19,7 +19,7 @@ export default function TeacherAssignmentsTab({ classId }: AssignmentsTabProps) 
   useEffect(() => {
     (async () => {
       try {
-        const data: any = await axiosClient.get(`/api/v1/classes/${classId}/assignments`);
+        const data: any = await assignmentService.getAssignments(classId, "teacher");
         if (data?.success) setAssignments(data.data);
         else setError(data?.message || "Không thể tải danh sách bài tập.");
       } catch (err: any) {
