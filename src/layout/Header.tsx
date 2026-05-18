@@ -1,6 +1,6 @@
 import { Menu, Search, Bell, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { authService } from "../services/auth/auth.service";
+import { authService } from "../services/auth.service";
 import useAuthStore, { type User } from "../store/useAuthStore";
 
 interface HeaderProps {

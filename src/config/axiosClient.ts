@@ -1,16 +1,19 @@
-import axios from "axios";
-import useAuthStore from "../store/useAuthStore";
+import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
+import useAuthStore from '../store/useAuthStore';
+
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api/v1';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
+  baseURL: API_BASE,
   withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
+  timeout: 10000,
 });
 
 axiosClient.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const accessToken = useAuthStore.getState().accessToken;
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -21,16 +24,20 @@ axiosClient.interceptors.request.use(
 );
 
 axiosClient.interceptors.response.use(
-  (response) => response,
+  (response: AxiosResponse) => {
+    if (response && response.data) {
+      return response.data;
+    }
+    return response;
+  },
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/refresh-token') {
+    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== `${API_BASE}/auth/refresh-token`) {
       originalRequest._retry = true;
-
       try {
         const { data } = await axios.post(
-          `${axiosClient.defaults.baseURL}/auth/refresh-token`,
+          `${API_BASE}/auth/refresh-token`,
           {},
           { withCredentials: true }
         );
@@ -38,18 +45,20 @@ axiosClient.interceptors.response.use(
         if (data.success && data.data.accessToken) {
           const newAccessToken = data.data.accessToken;
           useAuthStore.getState().setAccessToken(newAccessToken);
-          
+
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return axiosClient(originalRequest);
+          const res = await axiosClient(originalRequest);
+          return res;
         }
       } catch (refreshError) {
         useAuthStore.getState().logout();
         window.location.href = "/login";
-        return Promise.reject(refreshError);
+        return Promise.reject(new Error("Phiên đăng nhập đã hết hạn."));
       }
     }
 
-    return Promise.reject(error);
+    const errorMessage = error.response?.data?.message || error.message || 'Đã xảy ra lỗi kết nối!';
+    return Promise.reject(new Error(errorMessage));
   }
 );
 
