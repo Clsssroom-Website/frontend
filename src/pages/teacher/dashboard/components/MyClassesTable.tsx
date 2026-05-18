@@ -24,20 +24,20 @@ export function MyClassesTable({ classes }: MyClassesTableProps) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {classes.map((cls) => (
-              <tr key={cls.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-6 py-4 font-medium text-gray-900">{cls.name}</td>
+              <tr key={cls.classId} className="hover:bg-gray-50/50 transition-colors">
+                <td className="px-6 py-4 font-medium text-gray-900">{cls.className}</td>
                 <td className="px-6 py-4">
                   <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-mono">
-                    {cls.joinCode}
+                    {cls.joinCode || '-'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-gray-600">{cls.studentCount}</td>
                 <td className="px-6 py-4 text-gray-600">{cls.assignmentCount}</td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    cls.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                    cls.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                   }`}>
-                    {cls.status === 'active' ? 'Đang hoạt động' : 'Đã lưu trữ'}
+                    {cls.status === 'ACTIVE' ? 'Đang hoạt động' : (cls.status || 'Đã lưu trữ')}
                   </span>
                 </td>
               </tr>

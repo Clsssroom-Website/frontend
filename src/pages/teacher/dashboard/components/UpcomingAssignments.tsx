@@ -23,20 +23,20 @@ export function UpcomingAssignments({ assignments }: UpcomingAssignmentsProps) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {assignments.map((task) => (
-              <tr key={task.id} className="hover:bg-gray-50/50 transition-colors">
+              <tr key={task.assignmentId} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4 font-medium text-gray-900">{task.title}</td>
                 <td className="px-6 py-4 text-gray-600">{task.className}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center text-gray-600">
                     <Clock className="w-4 h-4 mr-2" />
-                    {task.dueDate}
+                    {new Date(task.deadline).toLocaleDateString('vi-VN')}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                    task.status === 'urgent' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
+                    task.urgency === 'urgent' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
                   }`}>
-                    {task.status === 'urgent' ? 'Sắp hết hạn' : 'Sắp tới'}
+                    {task.urgency === 'urgent' ? 'Sắp hết hạn' : 'Sắp tới'}
                   </span>
                 </td>
               </tr>

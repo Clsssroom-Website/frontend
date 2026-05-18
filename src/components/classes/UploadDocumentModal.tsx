@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+ import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, UploadCloud, FileType, CheckCircle2 } from "lucide-react";
 import { documentService } from "../../services/document.service";
 import toast from "react-hot-toast";
@@ -129,8 +130,8 @@ export default function UploadDocumentModal({ isOpen, onClose, classId, onUpload
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-800">Tải lên tài liệu</h2>
@@ -148,7 +149,7 @@ export default function UploadDocumentModal({ isOpen, onClose, classId, onUpload
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">File đính kèm <span className="text-red-500">*</span></label>
             <div 
-              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${
+              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer ${
                 file ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-indigo-400 bg-gray-50 hover:bg-indigo-50"
               }`}
               onDragOver={handleDragOver}
@@ -251,6 +252,7 @@ export default function UploadDocumentModal({ isOpen, onClose, classId, onUpload
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

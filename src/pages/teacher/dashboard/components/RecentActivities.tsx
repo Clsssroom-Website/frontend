@@ -13,11 +13,13 @@ export function RecentActivities({ activities }: RecentActivitiesProps) {
       <div className="p-6 flex-1">
         <div className="relative border-l border-gray-200 ml-3 space-y-6">
           {activities.map((activity) => (
-            <div key={activity.id} className="relative pl-6">
+            <div key={activity.submissionId} className="relative pl-6">
               <div className="absolute -left-1.5 top-1.5 w-3 h-3 bg-gray-200 border-2 border-white rounded-full"></div>
               <div>
-                <p className="text-sm text-gray-800">{activity.description}</p>
-                <span className="text-xs text-gray-400 mt-1 block">{activity.time}</span>
+                <p className="text-sm text-gray-800">{activity.studentName} đã nộp bài "{activity.assignmentTitle}"</p>
+                <span className="text-xs text-gray-400 mt-1 block">
+                  {activity.submittedAt ? new Date(activity.submittedAt).toLocaleString('vi-VN') : 'Không rõ'}
+                </span>
               </div>
             </div>
           ))}

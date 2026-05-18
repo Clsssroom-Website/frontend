@@ -5,33 +5,51 @@ export interface DashboardStats {
 }
 
 export interface ClassSummary {
-  id: string;
-  name: string;
-  joinCode: string;
+  classId: string;
+  className: string;
+  joinCode: string | null;
+  status: string | null;
   studentCount: number;
   assignmentCount: number;
-  status: 'active' | 'archived';
+  createdAt: string | null;
 }
 
 export interface SubmissionToGrade {
-  id: string;
+  submissionId: string;
+  assignmentId: string;
   assignmentTitle: string;
-  studentName: string;
+  assignmentType: string | null;
+  classId: string;
   className: string;
-  submittedAt: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  submittedAt: string | null;
 }
 
 export interface UpcomingAssignment {
-  id: string;
+  assignmentId: string;
   title: string;
+  classId: string;
   className: string;
-  dueDate: string;
-  status: 'upcoming' | 'urgent';
+  deadline: string;
+  typeAssignment: string | null;
+  totalSubmissions: number;
+  urgency: 'upcoming' | 'urgent';
 }
 
 export interface RecentActivity {
-  id: string;
-  description: string;
-  time: string;
-  type: 'submission' | 'comment' | 'system';
+  submissionId: string;
+  studentName: string;
+  assignmentTitle: string;
+  className: string;
+  submittedAt: string | null;
+}
+
+export interface TeacherDashboardData {
+  stats: DashboardStats;
+  classes: ClassSummary[];
+  pendingSubmissions: SubmissionToGrade[];
+  upcomingAssignments: UpcomingAssignment[];
+  recentActivities: RecentActivity[];
 }
