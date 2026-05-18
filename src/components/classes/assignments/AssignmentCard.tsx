@@ -34,6 +34,11 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
     }
   };
 
+  const getFileUrl = (uri: string) => {
+    if (uri.startsWith('http')) return uri;
+    return `${import.meta.env.VITE_MINIO_URL || "http://localhost:9000"}/${uri}`;
+  };
+
   return (
     <div className="border border-gray-200 rounded-xl bg-white hover:shadow-sm transition overflow-hidden">
       {/* Main row */}
@@ -130,7 +135,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
                 {assignment.AssignmentAttachments.map((att) => (
                   <a
                     key={att.attachmentId}
-                    href={att.fileUrl}
+                    href={getFileUrl(att.fileUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 hover:underline"

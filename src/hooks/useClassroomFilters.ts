@@ -9,6 +9,7 @@ export function useClassroomFilters(classes: Classroom[]) {
     if (!Array.isArray(classes)) return [];
     
     return classes.filter((cls) => {
+      // Vì đã gọi API tìm kiếm, nên phần search ở frontend có thể tắt hoặc giữ lại làm 2 lớp lọc
       const matchesSearch = 
         (cls.className?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
         (cls.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||

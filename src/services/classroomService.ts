@@ -5,8 +5,10 @@ export const classroomService = {
   /**
    * Lấy danh sách lớp học của người dùng hiện tại
    */
-  async getClasses(): Promise<Classroom[]> {
-    const data: any = await api.get("/classes");
+  async getClasses(searchQuery?: string): Promise<Classroom[]> {
+    const data: any = await api.get("/classes", {
+      params: { search: searchQuery || undefined }
+    });
     // axiosClient interceptor đã trả về trực tiếp response.data, nên payload là data.data
     return data.data || [];
   },
