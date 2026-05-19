@@ -27,12 +27,14 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data: any = await classroomService.getStudents(classId);
         if (data && data.success) {
           setStudents(data.data);
         } else {
           setError(data?.message || "Không thể tải danh sách học sinh.");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setError(err.message || "Lỗi kết nối. Vui lòng thử lại.");
       } finally {
@@ -48,6 +50,7 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
     }
     
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any = await classroomService.removeStudent(classId, studentId);
       if (data && data.success) {
         setStudents(prev => prev.filter(s => s.student.userId !== studentId));
@@ -55,6 +58,7 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
       } else {
         alert(data?.message || "Không thể xóa học sinh này.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       alert(err?.response?.data?.message || err.message || "Lỗi kết nối. Vui lòng thử lại.");

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Clock, Users, Paperclip, Pencil, Trash2, ExternalLink, Eye, Download } from "lucide-react";
+import { FileText, Clock, Users, Paperclip, Pencil, Trash2, Eye, Download } from "lucide-react";
 import { assignmentService } from "../../../services/assignmentService";
 import type { Assignment } from "../../../types/assignment";
 import { formatDeadline, isOverdue } from "../../../utils/dateUtils";
@@ -24,6 +24,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
     if (!confirm(`Xóa bài tập "${assignment.title}"?`)) return;
     setDeleting(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res: any = await assignmentService.deleteAssignment(assignment.classId, assignment.assignmentId);
       if (res.success) onDelete(assignment.assignmentId);
       else alert(res.message || "Xóa thất bại.");
@@ -39,6 +40,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
     return `${import.meta.env.VITE_MINIO_URL || "http://localhost:9000"}/${uri}`;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDownload = (att: any) => {
     const link = document.createElement('a');
     // Cách gọi ép tải xuống đối với presigned url Minio, ta thêm param response-content-disposition
