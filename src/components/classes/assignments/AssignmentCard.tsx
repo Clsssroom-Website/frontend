@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Clock, Users, Paperclip, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { FileText, Clock, Users, Paperclip, Pencil, Trash2, ExternalLink, Eye, Download } from "lucide-react";
 import { assignmentService } from "../../../services/assignmentService";
 import type { Assignment } from "../../../types/assignment";
 import { formatDeadline, isOverdue } from "../../../utils/dateUtils";
@@ -37,6 +37,19 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
   const getFileUrl = (uri: string) => {
     if (uri.startsWith('http')) return uri;
     return `${import.meta.env.VITE_MINIO_URL || "http://localhost:9000"}/${uri}`;
+  };
+
+  const handleDownload = (att: any) => {
+    const link = document.createElement('a');
+    // Cách gọi ép tải xuống đối với presigned url Minio, ta thêm param response-content-disposition
+    const urlObj = new URL(getFileUrl(att.fileUrl));
+    urlObj.searchParams.set("response-content-disposition", `attachment; filename="${att.fileName}"`);
+    
+    link.href = urlObj.toString();
+    link.download = att.fileName || 'download';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -131,19 +144,42 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
           {assignment.AssignmentAttachments.length > 0 && (
             <div>
               <p className="text-xs font-medium text-gray-500 mb-2">Tài liệu đính kèm</p>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {assignment.AssignmentAttachments.map((att) => (
-                  <a
-                    key={att.attachmentId}
-                    href={getFileUrl(att.fileUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
-                  >
-                    <Paperclip size={13} />
-                    {att.fileName}
-                    <ExternalLink size={12} className="text-gray-400" />
-                  </a>
+                  <div key={att.attachmentId} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100 transition">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Paperclip size={14} className="text-indigo-500 shrink-0" />
+                      <span className="text-sm font-medium text-gray-700 truncate">{att.fileName}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-4 shrink-0">
+                      {att.fileName?.toLowerCase().match(/\.(pdf|jpg|jpeg|png|gif|webp)$/) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(getFileUrl(att.fileUrl), "_blank");
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 bg-white border border-indigo-200 rounded transition cursor-pointer"
+                          title="Xem trước"
+                        >
+                          <Eye size={14} />
+                          <span className="hidden sm:inline">Xem trước</span>
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(att);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow rounded transition cursor-pointer"
+                        title="Tải về"
+                      >
+                        <Download size={14} />
+                        <span className="hidden sm:inline">Tải về</span>
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

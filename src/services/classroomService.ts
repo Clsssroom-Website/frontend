@@ -58,4 +58,11 @@ export const classroomService = {
   async getStream(classId: string): Promise<any> {
     return await api.get(`/classes/${classId}/stream`);
   },
+
+  /**
+   * Xoá học sinh ra khỏi lớp
+   */
+  async removeStudent(classId: string, studentId: string): Promise<any> {
+    return await api.delete(`/classes/${classId}/students/${studentId}`);
+  },
 };

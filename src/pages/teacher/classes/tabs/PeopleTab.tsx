@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { classroomService } from "../../../../services/classroomService";
-import { Users, Mail, Calendar, AlertCircle } from "lucide-react";
+import { Users, Mail, Calendar, AlertCircle, Trash2 } from "lucide-react";
 
 interface Student {
   enrollmentId: string;
@@ -41,6 +41,25 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
     };
     fetchStudents();
   }, [classId]);
+
+  const handleRemoveStudent = async (studentId: string, studentName: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa học sinh ${studentName} khỏi lớp này không?`)) {
+      return;
+    }
+    
+    try {
+      const data: any = await classroomService.removeStudent(classId, studentId);
+      if (data && data.success) {
+        setStudents(prev => prev.filter(s => s.student.userId !== studentId));
+        alert("Đã xóa học sinh khỏi lớp thành công.");
+      } else {
+        alert(data?.message || "Không thể xóa học sinh này.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.response?.data?.message || err.message || "Lỗi kết nối. Vui lòng thử lại.");
+    }
+  };
 
   if (loading) return <div className="text-center py-12 text-gray-400">Đang tải danh sách...</div>;
   if (error) return (
@@ -84,6 +103,13 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${enrollment.status === "JOINED" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                 {enrollment.status === "JOINED" ? "Đang học" : enrollment.status}
               </span>
+              <button
+                onClick={() => handleRemoveStudent(enrollment.student.userId, enrollment.student.name)}
+                className="ml-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
+                title="Xóa học sinh này khỏi lớp"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
         </div>
