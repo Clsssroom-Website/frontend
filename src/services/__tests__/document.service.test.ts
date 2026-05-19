@@ -8,6 +8,8 @@ vi.mock('@/config/axiosClient', () => ({
   default: {
     post: vi.fn(),
     get: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -65,6 +67,8 @@ describe('documentService', () => {
   });
 
   describe('getDownloadUrl', () => {
+    const mockAttachmentId = 'att-123';
+
     it('lấy URL xem trước (không có action download)', async () => {
       const mockResponse = {
         success: true,
@@ -73,9 +77,9 @@ describe('documentService', () => {
 
       vi.mocked(api.get).mockResolvedValueOnce(mockResponse);
 
-      const result = await documentService.getDownloadUrl(mockDocumentId);
+      const result = await documentService.getDownloadUrl(mockAttachmentId);
 
-      expect(api.get).toHaveBeenCalledWith(`/documents/${mockDocumentId}/download`);
+      expect(api.get).toHaveBeenCalledWith(`/documents/attachment/${mockAttachmentId}/download`);
       expect(result).toEqual(mockResponse);
     });
 
@@ -87,9 +91,45 @@ describe('documentService', () => {
 
       vi.mocked(api.get).mockResolvedValueOnce(mockResponse);
 
-      const result = await documentService.getDownloadUrl(mockDocumentId, 'download');
+      const result = await documentService.getDownloadUrl(mockAttachmentId, 'download');
 
-      expect(api.get).toHaveBeenCalledWith(`/documents/${mockDocumentId}/download?action=download`);
+      expect(api.get).toHaveBeenCalledWith(`/documents/attachment/${mockAttachmentId}/download?action=download`);
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('updateDocument', () => {
+    it('gọi API chỉnh sửa tài liệu với data', async () => {
+      const mockResponse = {
+        success: true,
+        data: { documentId: mockDocumentId, title: 'Updated' },
+      };
+
+      vi.mocked(api.put).mockResolvedValueOnce(mockResponse);
+
+      const formData = new FormData();
+      formData.append('title', 'Updated');
+      const result = await documentService.updateDocument(mockDocumentId, formData);
+
+      expect(api.put).toHaveBeenCalledWith(`/documents/${mockDocumentId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('deleteDocument', () => {
+    it('gọi API xóa tài liệu', async () => {
+      const mockResponse = {
+        success: true,
+        message: 'Deleted successfully',
+      };
+
+      vi.mocked(api.delete).mockResolvedValueOnce(mockResponse);
+
+      const result = await documentService.deleteDocument(mockDocumentId);
+
+      expect(api.delete).toHaveBeenCalledWith(`/documents/${mockDocumentId}`);
       expect(result).toEqual(mockResponse);
     });
   });
