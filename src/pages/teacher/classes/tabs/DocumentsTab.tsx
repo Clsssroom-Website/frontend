@@ -41,16 +41,11 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
     }
   };
 
-  const handleDownload = async (attachmentId: string, fileName: string) => {
+  const handleDownload = async (attachmentId: string) => {
     try {
       const res = await documentService.getDownloadUrl(attachmentId, "download");
       if (res.success && res.data) {
-        const link = document.createElement('a');
-        link.href = res.data;
-        link.download = fileName || 'download';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        window.location.href = res.data;
       }
     } catch (error) {
       toast.error("Không thể lấy link tải tài liệu.");
@@ -156,7 +151,7 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
                     )}
                     
                     <button 
-                      onClick={() => handleDownload(att.attachmentId, att.fileName)}
+                      onClick={() => handleDownload(att.attachmentId)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm hover:shadow transition cursor-pointer"
                     >
                       <Download size={14} />
@@ -201,7 +196,10 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
   }, [classId]);
 
   useEffect(() => {
-    fetchDocuments();
+    const timer = setTimeout(() => {
+      fetchDocuments();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchDocuments]);
 
   const handleEdit = (doc: Document) => {

@@ -2,6 +2,7 @@ export interface Attachment {
   attachmentId: string;
   fileName: string;
   fileUrl: string;
+  downloadUrl?: string;
   fileSize?: string | null;
 }
 
@@ -24,6 +25,7 @@ export interface ExistingAttachment {
   attachmentId: string;
   fileName: string;
   fileUrl: string;
+  downloadUrl?: string;
   fileSize?: string | null;
 }
 
@@ -41,6 +43,7 @@ export interface SubmissionAttachment {
   submissionId: string;
   fileName: string;
   fileUrl: string;
+  downloadUrl?: string;
   fileSize?: string | null;
   uploadedAt?: string;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, MoreVertical, Edit3, Clock, Paperclip, Eye, Download } from "lucide-react";
+import { FileText, Edit3, Clock, Paperclip, Eye, Download } from "lucide-react";
 import { classroomService } from "../../services/classroomService";
 import toast from "react-hot-toast";
 
@@ -11,6 +11,7 @@ interface StreamTabProps {
 interface Attachment {
   attachmentId: string;
   fileUrl: string;
+  downloadUrl?: string;
   fileName: string;
   fileSize?: string;
   fileType?: string;
@@ -54,9 +55,9 @@ export default function StreamTab({ classId, role }: StreamTabProps) {
     const fetchStream = async () => {
       try {
         setLoading(true);
-        const response: any = await classroomService.getStream(classId);
-        if (response?.success) {
-          setStream(response.data);
+        const response: unknown = await classroomService.getStream(classId);
+        if (response && typeof response === "object" && "success" in response && (response as { success: boolean }).success) {
+          setStream((response as unknown as { data: StreamItem[] }).data);
         }
       } catch (error) {
         console.error("Lỗi khi tải bảng tin:", error);
@@ -73,18 +74,14 @@ export default function StreamTab({ classId, role }: StreamTabProps) {
     window.open(getFileUrl(url), "_blank");
   };
 
-  const handleDownload = (url: string, fileName: string) => {
+  const handleDownload = (url: string, downloadUrl?: string) => {
     try {
-      const link = document.createElement('a');
-      const urlObj = new URL(getFileUrl(url));
-      urlObj.searchParams.set("response-content-disposition", `attachment; filename="${fileName}"`);
-      
-      link.href = urlObj.toString();
-      link.download = fileName || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
+      if (downloadUrl) {
+        window.location.href = downloadUrl;
+      } else {
+        window.location.href = getFileUrl(url);
+      }
+    } catch {
       toast.error("Không thể lấy link tải tài liệu.");
     }
   };
@@ -173,7 +170,7 @@ export default function StreamTab({ classId, role }: StreamTabProps) {
                         </button>
                       )}
                       <button 
-                        onClick={() => handleDownload(att.fileUrl, att.fileName)}
+                        onClick={() => handleDownload(att.fileUrl, att.downloadUrl)}
                         className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-md transition"
                         title="Tải về"
                       >

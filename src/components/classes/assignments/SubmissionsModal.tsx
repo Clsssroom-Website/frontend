@@ -114,17 +114,13 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
     return `${import.meta.env.VITE_MINIO_URL || "http://localhost:9000"}/${uri}`;
   };
 
-  const handleDownload = (fileUrl: string, fileName: string) => {
+  const handleDownload = (fileUrl: string, downloadUrl?: string) => {
     try {
-      const link = document.createElement('a');
-      const urlObj = new URL(getFileUrl(fileUrl));
-      urlObj.searchParams.set("response-content-disposition", `attachment; filename="${fileName}"`);
-      
-      link.href = urlObj.toString();
-      link.download = fileName || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (downloadUrl) {
+        window.location.href = downloadUrl;
+      } else {
+        window.location.href = getFileUrl(fileUrl);
+      }
     } catch {
       toast.error("Không thể lấy link tải tài liệu.");
     }
@@ -266,7 +262,7 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
                               <span className="font-bold text-sm text-emerald-800">{sub.grade.score}</span>{" "}
                               <span className="text-[10px] text-emerald-600">/ 10 điểm</span>
                               {sub.grade.comment && (
-                                <p className="text-[11px] text-emerald-700 mt-1 italic truncate max-w-[280px]" title={sub.grade.comment}>
+                                <p className="text-[11px] text-emerald-700 mt-1 italic truncate max-w-70" title={sub.grade.comment}>
                                   Nhận xét: "{sub.grade.comment}"
                                 </p>
                               )}
@@ -335,7 +331,7 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
                                     </button>
                                   )}
                                   <button 
-                                    onClick={() => handleDownload(att.fileUrl, att.fileName)}
+                                    onClick={() => handleDownload(att.fileUrl, att.downloadUrl)}
                                     className="p-1 text-green-600 hover:bg-green-50 rounded transition"
                                     title="Tải về"
                                   >

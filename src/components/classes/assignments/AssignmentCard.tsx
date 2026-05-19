@@ -44,16 +44,11 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDownload = (att: any) => {
-    const link = document.createElement('a');
-    // Cách gọi ép tải xuống đối với presigned url Minio, ta thêm param response-content-disposition
-    const urlObj = new URL(getFileUrl(att.fileUrl));
-    urlObj.searchParams.set("response-content-disposition", `attachment; filename="${att.fileName}"`);
-    
-    link.href = urlObj.toString();
-    link.download = att.fileName || 'download';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (att.downloadUrl) {
+      window.location.href = att.downloadUrl;
+    } else {
+      window.location.href = getFileUrl(att.fileUrl);
+    }
   };
 
   return (
