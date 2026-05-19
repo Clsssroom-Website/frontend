@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { assignmentService } from "../../../../services/assignmentService";
 import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
+import AssignmentDetailView from "./AssignmentDetailView";
 
 interface Assignment {
   assignmentId: string;
@@ -18,6 +19,7 @@ interface AssignmentsTabProps {
 
 export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +49,15 @@ export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) 
     </div>
   );
 
+  if (selectedAssignment) {
+    return (
+      <AssignmentDetailView 
+        assignment={selectedAssignment} 
+        onBack={() => setSelectedAssignment(null)} 
+      />
+    );
+  }
+
   if (assignments.length === 0) return (
     <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
       <FileText size={48} className="text-gray-300" />
@@ -60,14 +71,18 @@ export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) 
       {assignments.map((assignment) => {
         const isOverdue = new Date(assignment.deadline) < new Date();
         return (
-          <div key={assignment.assignmentId} className="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
+          <div 
+            key={assignment.assignmentId} 
+            onClick={() => setSelectedAssignment(assignment)}
+            className="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-200 cursor-pointer transition"
+          >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
                   <FileText size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">{assignment.title}</h3>
+                  <h3 className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors">{assignment.title}</h3>
                   <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{assignment.description || "Không có mô tả"}</p>
                 </div>
               </div>
@@ -82,11 +97,10 @@ export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) 
                 <span>Hạn nộp: {new Date(assignment.deadline).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
               </div>
               <button
-                disabled={isOverdue}
-                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
               >
                 <Upload size={15} />
-                Nộp bài
+                Xem bài tập
               </button>
             </div>
           </div>

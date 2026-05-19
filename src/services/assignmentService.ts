@@ -119,4 +119,36 @@ export const assignmentService = {
     );
     return response as unknown as ApiResponse<void>;
   },
+
+  /**
+   * Nộp bài tập (Dành cho học sinh)
+   */
+  submitAssignment: async (
+    assignmentId: string,
+    files: File[]
+  ): Promise<ApiResponse<any>> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("attachments", file);
+    });
+
+    const response = await api.post<ApiResponse<any>>(
+      `/students/assignments/${assignmentId}/submit`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return response as unknown as ApiResponse<any>;
+  },
+
+  /**
+   * Xem bài nộp và điểm (Dành cho học sinh)
+   */
+  getSubmissionAndGrade: async (
+    assignmentId: string
+  ): Promise<ApiResponse<any>> => {
+    const response = await api.get<ApiResponse<any>>(
+      `/students/assignments/${assignmentId}/submission`
+    );
+    return response as unknown as ApiResponse<any>;
+  },
 };
