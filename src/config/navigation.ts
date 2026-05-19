@@ -39,5 +39,4 @@ export const studentLinks = [
     href: '/student/settings',
     icon: Settings,
   }
-
 ];

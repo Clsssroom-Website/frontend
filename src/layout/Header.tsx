@@ -2,6 +2,7 @@ import { Menu, Search, Bell, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/auth.service";
 import useAuthStore, { type User } from "../store/useAuthStore";
+import { ThemeToggle } from "../components/theme/ThemeToggle";
 
 interface HeaderProps {
   user: User | null;
@@ -53,6 +54,8 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
           <Bell className="w-5 h-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
         </button>
+        
+        <ThemeToggle />
         
         <div className="h-8 w-px bg-gray-200 mx-2 hidden sm:block"></div>
         

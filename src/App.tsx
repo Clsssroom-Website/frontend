@@ -14,10 +14,12 @@ import ReportsPage from "./pages/teacher/reports/Reports";
 import GuestGuard from "./components/guards/GuestGuard";
 import AuthGuard from "./components/guards/AuthGuard";
 import RoleGuard from "./components/guards/RoleGuard";
+import { ThemeProvider } from "./components/theme/ThemeProvider";
 
 function App() {
   return (
-    <BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         
@@ -52,6 +54,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
