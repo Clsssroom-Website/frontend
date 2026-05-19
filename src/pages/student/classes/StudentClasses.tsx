@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ClassesLayout } from "../../../layout/ClassesLayout";
 import { ClassroomCard } from "../../../components/classes/ClassroomCard";
 import { ClassroomActionButton } from "../../../components/classes/ClassroomActionButton";
@@ -10,6 +10,14 @@ export default function StudentClasses() {
   const { classes, loading, fetchClasses } = useClassroomsData();
   const { searchQuery, setSearchQuery, statusFilter, setStatusFilter, filteredClasses } = useClassroomFilters(classes);
   const [isJoinModalOpen, setJoinModalOpen] = useState(false);
+
+  // Gọi API mỗi khi searchQuery thay đổi (Sử dụng debounce đơn giản)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchClasses(searchQuery);
+    }, 500); // 500ms debounce
+    return () => clearTimeout(timer);
+  }, [searchQuery, fetchClasses]);
 
   return (
     <ClassesLayout

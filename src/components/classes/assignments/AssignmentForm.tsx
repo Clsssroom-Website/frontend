@@ -1,85 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { X, Bold, Italic, List, Link as LinkIcon, UploadCloud, ChevronRight } from "lucide-react";
 import { AlertCircle } from "lucide-react";
 import { assignmentService } from "../../../services/assignmentService";
-import { uploadService } from "../../../services/uploadService";
-import type { Assignment, AttachmentInput } from "../../../types/assignment";
+import type { Assignment, AttachmentItem } from "../../../types/assignment";
 import { toDatetimeLocal } from "../../../utils/dateUtils";
 import AttachmentDisplayRow from "./AttachmentDisplayRow";
 
 interface AssignmentFormProps {
   classId: string;
-  editTarget?: Assignment | null; // null = create mode
+  editTarget?: Assignment | null; // undefined/null = create mode
   onSaved: (assignment: Assignment) => void;
   onCancel: () => void;
 }
 
 export default function AssignmentForm({ classId, editTarget, onSaved, onCancel }: AssignmentFormProps) {
   const isEdit = !!editTarget;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState(editTarget?.title ?? "");
   const [typeAssignment, setTypeAssignment] = useState(editTarget?.typeAssignment ?? "ESSAY");
   const [deadline, setDeadline] = useState(editTarget ? toDatetimeLocal(editTarget.deadline) : "");
   const [description, setDescription] = useState(editTarget?.description ?? "");
-  const [attachments, setAttachments] = useState<AttachmentInput[]>(
-    editTarget?.AssignmentAttachments.map((a) => ({ fileName: a.fileName, fileUrl: a.fileUrl })) ?? []
-  );
+
+  /**
+   * attachments: danh sách file hiển thị trong form.
+   * - kind="existing": file đã có trên server (khi edit)
+   * - kind="new":      file mới được chọn từ máy (chưa upload)
+   */
+  const [attachments, setAttachments] = useState<AttachmentItem[]>(() => {
+    if (!editTarget) return [];
+    return editTarget.AssignmentAttachments.map((a) => ({
+      kind: "existing" as const,
+      attachmentId: a.attachmentId,
+      fileName: a.fileName,
+      fileUrl: a.fileUrl,
+      fileSize: a.fileSize,
+    }));
+  });
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [uploading, setUploading] = useState(false);
+  // ─── File selection ───────────────────────────────────────────────────────────
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    const newItems: AttachmentItem[] = files.map((file) => ({
+      kind: "new" as const,
+      file,
+      previewName: file.name,
+    }));
+
+    setAttachments((prev) => [...prev, ...newItems]);
+    // Reset input để có thể chọn lại cùng file
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setError(null);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res: any = await uploadService.uploadFile(file);
-      if (res.success) {
-        setAttachments((prev) => [...prev, { fileName: res.data.data.fileName, fileUrl: res.data.data.fileUrl }]);
-      } else {
-        setError(res.message || "Tải file thất bại.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Lỗi khi tải file lên máy chủ.");
-    } finally {
-      setUploading(false);
-      e.target.value = ""; // reset input
-    }
-  };
-
+  // ─── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!title.trim()) { setError("Vui lòng nhập tiêu đề bài tập."); return; }
     if (!deadline) { setError("Vui lòng chọn hạn nộp."); return; }
 
-    const validAttachments = attachments.filter((a) => a.fileName.trim() && a.fileUrl.trim());
-
     setError(null);
     setSubmitting(true);
-    try {
-      const payload = {
-        title: title.trim(),
-        description,
-        deadline: new Date(deadline).toISOString(),
-        typeAssignment,
-        attachments: validAttachments,
-      };
 
-      let res: any;
+    try {
+      // Tách file mới và IDs file cũ muốn giữ
+      const newFiles = attachments
+        .filter((a): a is Extract<AttachmentItem, { kind: "new" }> => a.kind === "new")
+        .map((a) => a.file);
+
+      const keepIds = attachments
+        .filter((a): a is Extract<AttachmentItem, { kind: "existing" }> => a.kind === "existing")
+        .map((a) => a.attachmentId);
+
+      let res: Awaited<ReturnType<typeof assignmentService.createAssignment>>;
+
       if (isEdit) {
-        res = await assignmentService.updateAssignment(classId, editTarget!.assignmentId, payload);
+        res = await assignmentService.updateAssignment(classId, editTarget!.assignmentId, {
+          title: title.trim(),
+          description,
+          deadline: new Date(deadline).toISOString(),
+          typeAssignment,
+          keepAttachmentIds: keepIds,
+          files: newFiles,
+        });
       } else {
-        res = await assignmentService.createAssignment(classId, payload);
+        res = await assignmentService.createAssignment(classId, {
+          title: title.trim(),
+          description,
+          deadline: new Date(deadline).toISOString(),
+          typeAssignment,
+          files: newFiles,
+        });
       }
 
       if (res.success) {
@@ -88,7 +106,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
         setError(res.message || "Thao tác thất bại.");
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi kết nối.");
+      setError(err?.response?.data?.message || err.message || "Lỗi kết nối.");
     } finally {
       setSubmitting(false);
     }
@@ -107,7 +125,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto max-h-[80vh]">
           {/* Tiêu đề */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -198,19 +216,14 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
               <label className="block text-sm font-medium text-gray-700">
                 Tài liệu đính kèm (Đề bài, biểu mẫu...)
               </label>
-              <label className={`flex items-center gap-1.5 text-xs font-medium transition cursor-pointer ${
-                uploading ? "text-gray-400" : "text-indigo-600 hover:text-indigo-800"
-              }`}>
-                {uploading ? (
-                  <span className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <UploadCloud size={14} />
-                )}
-                {uploading ? "Đang tải lên..." : "Tải file từ máy"}
+              <label className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer transition">
+                <UploadCloud size={14} />
+                Thêm file
                 <input
+                  ref={fileInputRef}
                   type="file"
+                  multiple
                   className="hidden"
-                  disabled={uploading}
                   onChange={handleFileSelect}
                 />
               </label>
@@ -220,31 +233,34 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
               <label className="w-full py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-indigo-300 hover:text-indigo-500 transition flex flex-col items-center justify-center gap-3 cursor-pointer bg-gray-50/50">
                 <input
                   type="file"
+                  multiple
                   className="hidden"
-                  disabled={uploading}
                   onChange={handleFileSelect}
                 />
-                {uploading ? (
-                  <>
-                    <span className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-                    <span className="text-sm font-medium">Đang xử lý file...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud size={28} className="text-gray-300" />
-                    <span className="text-sm font-medium">Nhấn để chọn file tải lên</span>
-                  </>
-                )}
+                <UploadCloud size={28} className="text-gray-300" />
+                <span className="text-sm font-medium">Nhấn để chọn file đính kèm</span>
+                <span className="text-xs text-gray-400">PDF, DOCX, XLSX, PNG, JPG, ZIP — Tối đa 25MB/file</span>
               </label>
             ) : (
               <div className="space-y-2">
-                {attachments.map((a, i) => (
+                {attachments.map((item, i) => (
                   <AttachmentDisplayRow
                     key={i}
-                    attachment={a}
+                    item={item}
                     onRemove={() => removeAttachment(i)}
                   />
                 ))}
+                {/* Nút thêm file tiếp */}
+                <label className="flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-800 cursor-pointer mt-1 pl-1">
+                  <UploadCloud size={13} />
+                  Thêm file khác
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                </label>
               </div>
             )}
           </div>
