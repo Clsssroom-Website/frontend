@@ -3,6 +3,7 @@ import { FileText, Clock, Users, Paperclip, Pencil, Trash2, Eye, Download } from
 import { assignmentService } from "../../../services/assignmentService";
 import type { Assignment } from "../../../types/assignment";
 import { formatDeadline, isOverdue } from "../../../utils/dateUtils";
+import SubmissionsModal from "./SubmissionsModal";
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -19,6 +20,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
   const overdue = isOverdue(assignment.deadline);
   const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [isSubmissionsOpen, setIsSubmissionsOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!confirm(`Xóa bài tập "${assignment.title}"?`)) return;
@@ -97,7 +99,10 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
               <Clock size={12} />
               Hạn nộp: {formatDeadline(assignment.deadline)}
             </span>
-            <span className="flex items-center gap-1">
+            <span 
+              className="flex items-center gap-1 cursor-pointer "
+              title="Xem danh sách bài nộp"
+            >
               <Users size={12} />
               {assignment.totalSubmissions ?? 0} bài đã nộp
             </span>
@@ -186,7 +191,29 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
               </div>
             </div>
           )}
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSubmissionsOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition cursor-pointer animate-fade-in"
+            >
+              <Users size={16} />
+              Xem danh sách bài nộp ({assignment.totalSubmissions ?? 0})
+            </button>
+          </div>
         </div>
+      )}
+
+      {isSubmissionsOpen && (
+        <SubmissionsModal
+          isOpen={isSubmissionsOpen}
+          classId={assignment.classId}
+          assignment={assignment}
+          onClose={() => setIsSubmissionsOpen(false)}
+        />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import api from "../config/axiosClient";
-import type { Assignment } from "../types/assignment";
+import type { Assignment, Submission } from "../types/assignment";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -126,18 +126,18 @@ export const assignmentService = {
   submitAssignment: async (
     assignmentId: string,
     files: File[]
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<Submission>> => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append("attachments", file);
     });
 
-    const response = await api.post<ApiResponse<any>>(
+    const response = await api.post<ApiResponse<Submission>>(
       `/students/assignments/${assignmentId}/submit`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
-    return response as unknown as ApiResponse<any>;
+    return response as unknown as ApiResponse<Submission>;
   },
 
   /**
@@ -145,10 +145,39 @@ export const assignmentService = {
    */
   getSubmissionAndGrade: async (
     assignmentId: string
-  ): Promise<ApiResponse<any>> => {
-    const response = await api.get<ApiResponse<any>>(
+  ): Promise<ApiResponse<Submission | null>> => {
+    const response = await api.get<ApiResponse<Submission | null>>(
       `/students/assignments/${assignmentId}/submission`
     );
-    return response as unknown as ApiResponse<any>;
+    return response as unknown as ApiResponse<Submission | null>;
+  },
+
+  /**
+   * Lấy danh sách bài nộp của học sinh (Dành cho giáo viên)
+   */
+  getSubmissions: async (
+    classId: string,
+    assignmentId: string
+  ): Promise<ApiResponse<Submission[]>> => {
+    const response = await api.get<ApiResponse<Submission[]>>(
+      `/classes/${classId}/assignments/${assignmentId}/submissions`
+    );
+    return response as unknown as ApiResponse<Submission[]>;
+  },
+
+  /**
+   * Chấm điểm cho bài nộp của học sinh (Dành cho giáo viên)
+   */
+  gradeSubmission: async (
+    classId: string,
+    assignmentId: string,
+    submissionId: string,
+    payload: { score: number; comment?: string }
+  ): Promise<ApiResponse<void>> => {
+    const response = await api.post<ApiResponse<void>>(
+      `/classes/${classId}/assignments/${assignmentId}/submissions/${submissionId}/grade`,
+      payload
+    );
+    return response as unknown as ApiResponse<void>;
   },
 };

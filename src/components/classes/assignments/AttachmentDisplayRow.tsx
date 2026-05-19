@@ -1,4 +1,4 @@
-import { Paperclip, X, FileText } from "lucide-react";
+import { X } from "lucide-react";
 import type { AttachmentItem } from "../../../types/assignment";
 
 interface AttachmentDisplayRowProps {

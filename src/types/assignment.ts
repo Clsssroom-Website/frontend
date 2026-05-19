@@ -35,3 +35,36 @@ export interface NewAttachment {
 }
 
 export type AttachmentItem = ExistingAttachment | NewAttachment;
+
+export interface SubmissionAttachment {
+  attachmentId: string;
+  submissionId: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize?: string | null;
+  uploadedAt?: string;
+}
+
+export interface SubmissionGrade {
+  gradeId: string;
+  score: number | null;
+  comment?: string | null;
+  gradedAt?: string;
+}
+
+export interface SubmissionStudent {
+  userId: string;
+  name: string;
+  email: string;
+}
+
+export interface Submission {
+  submissionId: string;
+  assignmentId: string;
+  studentId: string;
+  submittedAt: string;
+  status: string;
+  student: SubmissionStudent | null;
+  SubmissionAttachments: SubmissionAttachment[];
+  grade: SubmissionGrade | null;
+}
