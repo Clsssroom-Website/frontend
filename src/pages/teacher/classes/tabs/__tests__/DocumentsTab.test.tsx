@@ -94,7 +94,7 @@ describe('TeacherDocumentsTab Component', () => {
     });
   });
 
-  it('hiển thị danh sách tài liệu thành công', async () => {
+  it('hiển thị danh sách tài liệu thành công và hiển thị file khi click để mở rộng', async () => {
     vi.mocked(documentService.getDocumentsByClassId).mockResolvedValue({ success: true, data: mockDocuments as any });
     
     render(<TeacherDocumentsTab classId={classId} />);
@@ -102,15 +102,18 @@ describe('TeacherDocumentsTab Component', () => {
     await waitFor(() => {
       expect(screen.getByText('Bài giảng React')).toBeInTheDocument();
       expect(screen.getByText('Slide buổi 1')).toBeInTheDocument();
-      expect(screen.getByText('1.00 MB')).toBeInTheDocument(); // 1048576 byte
-      
       expect(screen.getByText('Bài tập về nhà')).toBeInTheDocument();
-      expect(screen.getByText('0.50 MB')).toBeInTheDocument(); // 524288 byte
+      expect(screen.getByText('Làm bài 1,2,3')).toBeInTheDocument();
     });
-    
-    // Kiểm tra nút Xem trước chỉ hiển thị cho PDF
-    const previewButtons = screen.getAllByText('Xem trước');
-    expect(previewButtons).toHaveLength(1); // Chỉ doc-1 (PDF) có
+
+    // Click to expand first document
+    fireEvent.click(screen.getByText('Bài giảng React'));
+
+    await waitFor(() => {
+      expect(screen.getByText('react-1.pdf')).toBeInTheDocument();
+      expect(screen.getByText('(1.00 MB)')).toBeInTheDocument(); // 1048576 byte
+      expect(screen.getByText('Xem trước')).toBeInTheDocument();
+    });
   });
 
   it('gọi API tải tài liệu và sinh thẻ a khi bấm Tải về', async () => {
@@ -125,12 +128,15 @@ describe('TeacherDocumentsTab Component', () => {
     // Đợi danh sách load
     await waitFor(() => screen.getByText('Bài giảng React'));
     
-    // Bấm tải về doc-1
-    const downloadButtons = screen.getAllByText('Tải về');
-    fireEvent.click(downloadButtons[0]);
+    // Click to expand
+    fireEvent.click(screen.getByText('Bài giảng React'));
+
+    // Bấm tải về
+    await waitFor(() => expect(screen.getByText('Tải về')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Tải về'));
 
     await waitFor(() => {
-      expect(documentService.getDownloadUrl).toHaveBeenCalledWith('doc-1', 'download');
+      expect(documentService.getDownloadUrl).toHaveBeenCalledWith('att-1', 'download');
       expect(clickSpy).toHaveBeenCalled();
     });
     
@@ -145,11 +151,15 @@ describe('TeacherDocumentsTab Component', () => {
     
     await waitFor(() => screen.getByText('Bài giảng React'));
     
+    // Click to expand
+    fireEvent.click(screen.getByText('Bài giảng React'));
+
+    await waitFor(() => expect(screen.getByText('Xem trước')).toBeInTheDocument());
     const previewButton = screen.getByText('Xem trước');
     fireEvent.click(previewButton);
 
     await waitFor(() => {
-      expect(documentService.getDownloadUrl).toHaveBeenCalledWith('doc-1'); // Không có action=download
+      expect(documentService.getDownloadUrl).toHaveBeenCalledWith('att-1'); // Không có action=download
       expect(window.open).toHaveBeenCalledWith('http://fake.url/preview', '_blank');
     });
   });

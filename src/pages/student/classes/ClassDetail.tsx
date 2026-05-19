@@ -7,12 +7,14 @@ import ClassDetailLayout from "../../../components/classes/ClassDetailLayout";
 import StreamTab from "../../../components/classes/StreamTab";
 import StudentAssignmentsTab from "./tabs/AssignmentsTab";
 import StudentGradesTab from "./tabs/GradesTab";
+import StudentDocumentsTab from "@/pages/teacher/classes/tabs/DocumentsTab";
 
 import type { Classroom } from "../../../types/classroom";
 
 const STUDENT_TABS = [
   { id: "stream", label: "Bảng tin", icon: <Menu size={18} /> },
   { id: "classwork", label: "Bài tập", icon: <FileText size={18} /> },
+  { id: "documents", label: "Tài liệu", icon: <Edit3 size={18} /> },
   { id: "grades", label: "Điểm số", icon: <Edit3 size={18} /> },
 ];
 
@@ -39,6 +41,7 @@ export default function StudentClassDetail() {
     switch (activeTab) {
       case "stream": return <StreamTab classId={classId!} role="student" />;
       case "classwork": return <StudentAssignmentsTab classId={classId!} />;
+      case "documents": return <StudentDocumentsTab classId={classId!} role="student" />;
       case "grades": return <StudentGradesTab classId={classId!} />;
       default: return null;
     }
