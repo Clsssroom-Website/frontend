@@ -11,8 +11,9 @@ export const dashboardService = {
   /**
    * Lấy toàn bộ dữ liệu cho trang Dashboard của giáo viên
    */
-  getDashboard: async (): Promise<ApiResponse<TeacherDashboardData>> => {
-    const response = await api.get<ApiResponse<TeacherDashboardData>>("/dashboard");
+  getDashboard: async (limit?: number): Promise<ApiResponse<TeacherDashboardData>> => {
+    const url = limit ? `/dashboard?limit=${limit}` : "/dashboard";
+    const response = await api.get<ApiResponse<TeacherDashboardData>>(url);
     return response as unknown as ApiResponse<TeacherDashboardData>;
   },
 

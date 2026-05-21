@@ -15,10 +15,12 @@ import GuestGuard from "./components/guards/GuestGuard";
 import AuthGuard from "./components/guards/AuthGuard";
 import RoleGuard from "./components/guards/RoleGuard";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
     <ThemeProvider>
+      <Toaster position="top-right" reverseOrder={false} />
       <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />

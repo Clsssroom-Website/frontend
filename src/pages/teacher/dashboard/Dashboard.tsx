@@ -7,6 +7,7 @@ import { RecentActivities } from './components/RecentActivities';
 import { dashboardService } from '../../../services/dashboard.service';
 import type { TeacherDashboardData } from './components/types';
 import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function TeacherDashboard() {
   const [data, setData] = useState<TeacherDashboardData | null>(null);
@@ -16,14 +17,18 @@ export default function TeacherDashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await dashboardService.getDashboard();
+        const response = await dashboardService.getDashboard(5);
         if (response.success) {
           setData(response.data);
         } else {
-          setError(response.message || 'Lỗi tải dữ liệu');
+          const errMsg = response.message || 'Lỗi tải dữ liệu';
+          setError(errMsg);
+          toast.error(errMsg);
         }
       } catch (err: any) {
-        setError(err.message || 'Lỗi kết nối tới máy chủ');
+        const errMsg = err.message || 'Lỗi kết nối tới máy chủ';
+        setError(errMsg);
+        toast.error(errMsg);
       } finally {
         setLoading(false);
       }

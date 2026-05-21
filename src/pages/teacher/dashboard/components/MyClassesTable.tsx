@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { ClassSummary } from './types';
 
 interface MyClassesTableProps {
@@ -5,11 +6,18 @@ interface MyClassesTableProps {
 }
 
 export function MyClassesTable({ classes }: MyClassesTableProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col">
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-lg font-semibold text-gray-900">Lớp học của tôi</h2>
-        <button className="text-sm text-blue-600 hover:underline font-medium">Xem tất cả</button>
+        <button 
+          onClick={() => navigate('/teacher/classes')}
+          className="text-sm text-blue-600 hover:underline font-medium cursor-pointer"
+        >
+          Xem tất cả
+        </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
@@ -24,7 +32,11 @@ export function MyClassesTable({ classes }: MyClassesTableProps) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {classes.map((cls) => (
-              <tr key={cls.classId} className="hover:bg-gray-50/50 transition-colors">
+              <tr 
+                key={cls.classId} 
+                className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                onClick={() => navigate(`/teacher/classes/${cls.classId}`)}
+              >
                 <td className="px-6 py-4 font-medium text-gray-900">{cls.className}</td>
                 <td className="px-6 py-4">
                   <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-mono">
