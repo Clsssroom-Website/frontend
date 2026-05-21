@@ -119,7 +119,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                   Hạn nộp: {formatDeadline(assignment.deadline)}
                 </div>
                 <div className="px-3 py-1.5 rounded-lg border border-gray-200 font-medium text-gray-600 bg-white shadow-sm">
-                  Thang điểm: 100
+                  Thang điểm: 10
                 </div>
                 {!hasSubmitted && isOverdue && (
                   <div className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-medium border border-red-100 shadow-sm">
@@ -217,12 +217,12 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                     <div className="mt-6 pt-5 border-t border-gray-100">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-600">Điểm số:</span>
-                        <span className="text-2xl font-bold text-indigo-600">{submission.grade}<span className="text-sm text-gray-400 font-medium">/100</span></span>
+                        <span className="text-2xl font-bold text-indigo-600">{submission.grade.score}<span className="text-sm text-gray-400 font-medium">/10</span></span>
                       </div>
-                      {submission.feedback && (
+                      {submission.grade.comment && (
                         <div className="mt-3 text-sm text-gray-700 bg-indigo-50 p-3.5 rounded-lg border border-indigo-100 shadow-sm">
                           <span className="font-semibold text-indigo-900 block mb-1">Giáo viên nhận xét:</span>
-                          <p className="leading-relaxed">{submission.feedback}</p>
+                          <p className="leading-relaxed">{submission.grade.comment}</p>
                         </div>
                       )}
                     </div>

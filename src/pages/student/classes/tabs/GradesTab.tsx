@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Award, AlertCircle } from "lucide-react";
+import { classroomService } from "../../../../services/classroomService";
 
 interface Grade {
   gradeId: string;
@@ -21,14 +22,31 @@ interface GradesTabProps {
 
 
 export default function StudentGradesTab({ classId }: GradesTabProps) {
-  const [grades] = useState<Grade[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: Thêm API GET /students/classes/:classId/grades ở backend
-    // Hiện tại để placeholder
-    setLoading(false);
+    const fetchGrades = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await classroomService.getStudentGrades(classId);
+        if (res && res.success) {
+          setGrades(res.data || []);
+        } else {
+          setError(res?.message || "Không thể tải danh sách điểm số.");
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.message || err.message || "Lỗi kết nối. Vui lòng thử lại.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (classId) {
+      fetchGrades();
+    }
   }, [classId]);
 
   if (loading) return <div className="text-center py-12 text-gray-400">Đang tải điểm số...</div>;

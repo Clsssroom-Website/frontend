@@ -28,7 +28,7 @@ export function RecentGrades({ grades }: RecentGradesProps) {
                 </div>
                 <div className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-100 font-bold text-sm shrink-0 flex items-center gap-1 shadow-sm">
                   {g.score}
-                  <span className="text-xs text-emerald-500 font-medium">/100</span>
+                  <span className="text-xs text-emerald-500 font-medium">/10</span>
                 </div>
               </div>
               

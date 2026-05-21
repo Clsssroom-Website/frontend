@@ -56,7 +56,7 @@ export function UpcomingAssignments({ assignments }: UpcomingAssignmentsProps) {
                   </td>
                   <td className="px-6 py-4">
                     <button 
-                      onClick={() => navigate(`/student/classes/${task.classId}`)}
+                      onClick={() => navigate(`/student/classes/${task.classId}`, { state: { activeTab: 'classwork', assignmentId: task.assignmentId } })}
                       className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition text-xs shadow-sm"
                     >
                       <Play className="w-3 h-3 fill-current" />

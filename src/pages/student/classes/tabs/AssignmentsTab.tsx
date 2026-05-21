@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { assignmentService } from "../../../../services/assignmentService";
 import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
 import AssignmentDetailView from "./AssignmentDetailView";
@@ -15,13 +15,17 @@ interface Assignment {
 
 interface AssignmentsTabProps {
   classId: string;
+  initialAssignmentId?: string;
 }
 
-export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) {
+export default function StudentAssignmentsTab({ classId, initialAssignmentId }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Keep a ref of the initialAssignmentId so it doesn't change when prop changes
+  const initialId = useRef(initialAssignmentId);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -29,6 +33,12 @@ export default function StudentAssignmentsTab({ classId }: AssignmentsTabProps) 
         const data: any = await assignmentService.getAssignments(classId, "student");
         if (data && data.success) {
           setAssignments(data.data);
+          if (initialId.current) {
+            const found = data.data.find((a: Assignment) => a.assignmentId === initialId.current);
+            if (found) {
+              setSelectedAssignment(found);
+            }
+          }
         } else {
           setError(data?.message || "Không thể tải danh sách bài tập.");
         }

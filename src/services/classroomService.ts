@@ -65,4 +65,14 @@ export const classroomService = {
   async removeStudent(classId: string, studentId: string): Promise<any> {
     return await api.delete(`/classes/${classId}/students/${studentId}`);
   },
+
+  /**
+   * Lấy danh sách điểm số của học sinh trong lớp
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getStudentGrades(classId: string): Promise<any> {
+    return await api.get(`/students/classes/${classId}/grades`);
+  },
+
 };
+

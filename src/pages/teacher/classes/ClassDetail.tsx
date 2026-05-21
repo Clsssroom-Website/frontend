@@ -26,7 +26,7 @@ export default function TeacherClassDetail() {
   useEffect(() => {
     const fetchClassroom = async () => {
       try {
-        const data: any = await classroomService.getClassDetail(classId);
+        const data: any = await classroomService.getClassDetail(classId!);
         if (data.success) setClassroom(data.data);
       } catch (error) {
         console.error("Failed to fetch classroom:", error);
