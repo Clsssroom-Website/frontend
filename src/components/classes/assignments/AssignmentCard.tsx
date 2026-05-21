@@ -4,6 +4,8 @@ import { assignmentService } from "../../../services/assignmentService";
 import type { Assignment } from "../../../types/assignment";
 import { formatDeadline, isOverdue } from "../../../utils/dateUtils";
 import SubmissionsModal from "./SubmissionsModal";
+import toast from "react-hot-toast";
+import ConfirmModal from "../../common/ConfirmModal";
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -21,17 +23,26 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
   const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isSubmissionsOpen, setIsSubmissionsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const handleDelete = async () => {
-    if (!confirm(`Xóa bài tập "${assignment.title}"?`)) return;
+  const handleDeleteTrigger = () => {
+    setConfirmOpen(true);
+  };
+
+  const executeDelete = async () => {
+    setConfirmOpen(false);
     setDeleting(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res: any = await assignmentService.deleteAssignment(assignment.classId, assignment.assignmentId);
-      if (res.success) onDelete(assignment.assignmentId);
-      else alert(res.message || "Xóa thất bại.");
+      if (res.success) {
+        onDelete(assignment.assignmentId);
+        toast.success("Xóa bài tập thành công!");
+      } else {
+        toast.error(res.message || "Xóa thất bại.");
+      }
     } catch {
-      alert("Lỗi kết nối.");
+      toast.error("Lỗi kết nối.");
     } finally {
       setDeleting(false);
     }
@@ -120,7 +131,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
             <Pencil size={16} />
           </button>
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteTrigger}
             disabled={deleting}
             title="Xóa bài tập"
             className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition"
@@ -210,6 +221,16 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
           onClose={() => setIsSubmissionsOpen(false)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Xóa bài tập"
+        message={`Bạn có chắc chắn muốn xóa bài tập "${assignment.title}" không? Hành động này không thể hoàn tác.`}
+        confirmLabel="Xóa"
+        cancelLabel="Hủy"
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }

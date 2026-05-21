@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { classroomService } from "../../../../services/classroomService";
 import { Users, Mail, Calendar, AlertCircle, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
+import ConfirmModal from "../../../../components/common/ConfirmModal";
 
 interface Student {
   enrollmentId: string;
@@ -24,6 +26,10 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // States for ConfirmModal
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string } | null>(null);
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -44,24 +50,30 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
     fetchStudents();
   }, [classId]);
 
-  const handleRemoveStudent = async (studentId: string, studentName: string) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa học sinh ${studentName} khỏi lớp này không?`)) {
-      return;
-    }
+  const triggerRemoveStudent = (studentId: string, studentName: string) => {
+    setSelectedStudent({ id: studentId, name: studentName });
+    setConfirmOpen(true);
+  };
+
+  const executeRemoveStudent = async () => {
+    if (!selectedStudent) return;
+    setConfirmOpen(false);
     
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: any = await classroomService.removeStudent(classId, studentId);
+      const data: any = await classroomService.removeStudent(classId, selectedStudent.id);
       if (data && data.success) {
-        setStudents(prev => prev.filter(s => s.student.userId !== studentId));
-        alert("Đã xóa học sinh khỏi lớp thành công.");
+        setStudents(prev => prev.filter(s => s.student.userId !== selectedStudent.id));
+        toast.success("Đã xóa học sinh khỏi lớp thành công.");
       } else {
-        alert(data?.message || "Không thể xóa học sinh này.");
+        toast.error(data?.message || "Không thể xóa học sinh này.");
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
-      alert(err?.response?.data?.message || err.message || "Lỗi kết nối. Vui lòng thử lại.");
+      toast.error(err?.response?.data?.message || err.message || "Lỗi kết nối. Vui lòng thử lại.");
+    } finally {
+      setSelectedStudent(null);
     }
   };
 
@@ -108,7 +120,7 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
                 {enrollment.status === "JOINED" ? "Đang học" : enrollment.status}
               </span>
               <button
-                onClick={() => handleRemoveStudent(enrollment.student.userId, enrollment.student.name)}
+                onClick={() => triggerRemoveStudent(enrollment.student.userId, enrollment.student.name)}
                 className="ml-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
                 title="Xóa học sinh này khỏi lớp"
               >
@@ -118,6 +130,19 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmOpen}
+        title="Xóa học sinh"
+        message={`Bạn có chắc chắn muốn xóa học sinh "${selectedStudent?.name}" khỏi lớp này không?`}
+        confirmLabel="Xóa"
+        cancelLabel="Hủy"
+        onConfirm={executeRemoveStudent}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setSelectedStudent(null);
+        }}
+      />
     </div>
   );
 }

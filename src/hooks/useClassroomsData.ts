@@ -32,12 +32,13 @@ export function useClassroomsData() {
   // }, [fetchClasses]);
 
   const deleteClass = useCallback(async (classId: string) => {
-    if (!confirm("Are you sure you want to delete this class?")) return;
     try {
-      await classroomService.deleteClass(classId);
+      const data = await classroomService.deleteClass(classId);
       await fetchClasses();
+      return data;
     } catch (error) {
       console.error("Failed to delete class", error);
+      throw error;
     }
   }, [fetchClasses]);
 

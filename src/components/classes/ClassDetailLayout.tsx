@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Settings, Share2, MoreVertical, Copy } from "lucide-react";
 import type { Classroom } from "../../types/classroom";
+import toast from "react-hot-toast";
 
 interface TabConfig {
   id: string;
@@ -88,7 +89,7 @@ export default function ClassDetailLayout({
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(classroom.joinCode);
-                    alert("Đã copy mã!");
+                    toast.success("Đã sao chép mã tham gia lớp học!");
                   }}
                   className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition"
                 >

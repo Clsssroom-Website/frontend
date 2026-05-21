@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { classroomService } from "../../services/classroomService";
 import { X } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface CreateClassModalProps {
   isOpen: boolean;
@@ -27,10 +28,11 @@ export function CreateClassModal({ isOpen, onClose, onSuccess }: CreateClassModa
       const data: any = await classroomService.createClass(formData);
       
       if (data.success) {
+        toast.success(data.message || "Tạo lớp học thành công!");
         setFormData({ className: "", description: "", room: "", topic: "" });
         onSuccess();
       } else {
-        alert(data.message || "Something went wrong!");
+        toast.error(data.message || "Something went wrong!");
       }
     } catch (error) {
       console.error("Failed to create class", error);

@@ -5,6 +5,7 @@ import EditDocumentModal from "../../../../components/classes/EditDocumentModal"
 import { documentService } from "../../../../services/document.service";
 import type { Document } from "../../../../types/document";
 import toast from "react-hot-toast";
+import ConfirmModal from "../../../../components/common/ConfirmModal";
 
 // --- Utilities ---
 const formatDate = (dateString: string) => {
@@ -181,6 +182,10 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // States for delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -207,15 +212,22 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = async (documentId: string) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa tài liệu này không? Tất cả các tệp đính kèm cũng sẽ bị xóa.")) {
-      try {
-        await documentService.deleteDocument(documentId);
-        toast.success("Xóa tài liệu thành công!");
-        fetchDocuments();
-      } catch (error) {
-        toast.error("Không thể xóa tài liệu");
-      }
+  const handleDeleteTrigger = (documentId: string) => {
+    setDocumentToDelete(documentId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteExecute = async () => {
+    if (!documentToDelete) return;
+    setDeleteConfirmOpen(false);
+    try {
+      await documentService.deleteDocument(documentToDelete);
+      toast.success("Xóa tài liệu thành công!");
+      fetchDocuments();
+    } catch (error) {
+      toast.error("Không thể xóa tài liệu");
+    } finally {
+      setDocumentToDelete(null);
     }
   };
 
@@ -258,7 +270,7 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
               doc={doc} 
               isTeacher={isTeacher}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={handleDeleteTrigger}
             />
           ))}
         </div>
@@ -284,6 +296,19 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
           onEditSuccess={fetchDocuments}
         />
       )}
+
+      <ConfirmModal
+        isOpen={deleteConfirmOpen}
+        title="Xóa tài liệu"
+        message="Bạn có chắc chắn muốn xóa tài liệu này không? Tất cả các tệp đính kèm cũng sẽ bị xóa."
+        confirmLabel="Xóa"
+        cancelLabel="Hủy"
+        onConfirm={handleDeleteExecute}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          setDocumentToDelete(null);
+        }}
+      />
     </div>
   );
 }

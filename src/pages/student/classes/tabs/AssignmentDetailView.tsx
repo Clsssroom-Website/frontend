@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FileText, UploadCloud, Clock, CheckCircle2, Download, ExternalLink, Paperclip, X, AlertCircle } from "lucide-react";
 import { assignmentService } from "../../../../services/assignmentService";
 import { formatDeadline } from "../../../../utils/dateUtils";
+import toast from "react-hot-toast";
 
 interface AssignmentDetailViewProps {
   assignment: any;
@@ -58,7 +59,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
       if (res.success) {
         setSubmission(res.data);
         setSelectedFiles([]);
-        alert("Nộp bài thành công!");
+        toast.success("Nộp bài thành công!");
       } else {
         setError(res.message || "Có lỗi xảy ra khi nộp bài.");
       }

@@ -7,11 +7,33 @@ import { CreateClassModal } from "../../../components/classes/CreateClassModal";
 import { useClassroomsData } from "../../../hooks/useClassroomsData";
 import { useClassroomFilters } from "../../../hooks/useClassroomFilters";
 import toast from "react-hot-toast";
+import ConfirmModal from "../../../components/common/ConfirmModal";
 
 export default function TeacherClasses() {
   const { classes, loading, fetchClasses, deleteClass } = useClassroomsData();
   const { searchQuery, setSearchQuery, statusFilter, setStatusFilter, filteredClasses } = useClassroomFilters(classes);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+
+  // States for delete confirmation
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [classToDelete, setClassToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const handleDeleteExecute = async () => {
+    if (!classToDelete) return;
+    setConfirmOpen(false);
+    try {
+      const res = await deleteClass(classToDelete.id);
+      if (res && res.success) {
+        toast.success("Xóa lớp học thành công!");
+      } else {
+        toast.error(res?.message || "Không thể xóa lớp học.");
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err.message || "Lỗi kết nối.");
+    } finally {
+      setClassToDelete(null);
+    }
+  };
 
   // Gọi API mỗi khi searchQuery thay đổi (Sử dụng debounce đơn giản)
   useEffect(() => {
@@ -35,14 +57,28 @@ export default function TeacherClasses() {
       loading={loading}
       isEmpty={filteredClasses.length === 0}
       modals={
-        <CreateClassModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setCreateModalOpen(false)}
-          onSuccess={() => {
-            setCreateModalOpen(false);
-            fetchClasses();
-          }}
-        />
+        <>
+          <CreateClassModal
+            isOpen={isCreateModalOpen}
+            onClose={() => setCreateModalOpen(false)}
+            onSuccess={() => {
+              setCreateModalOpen(false);
+              fetchClasses();
+            }}
+          />
+          <ConfirmModal
+            isOpen={confirmOpen}
+            title="Xóa lớp học"
+            message={`Bạn có chắc chắn muốn xóa lớp học "${classToDelete?.name}" không? Hành động này không thể hoàn tác.`}
+            confirmLabel="Xóa"
+            cancelLabel="Hủy"
+            onConfirm={handleDeleteExecute}
+            onCancel={() => {
+              setConfirmOpen(false);
+              setClassToDelete(null);
+            }}
+          />
+        </>
       }
     >
       {filteredClasses.map((cls) => (
@@ -66,7 +102,8 @@ export default function TeacherClasses() {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  deleteClass(cls.classId);
+                  setClassToDelete({ id: cls.classId, name: cls.className });
+                  setConfirmOpen(true);
                 }}
                 className="flex-1 flex items-center justify-center gap-2 py-2 border border-gray-200 rounded-md hover:bg-red-50 text-red-600 text-sm transition-colors"
               >
