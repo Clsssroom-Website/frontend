@@ -154,6 +154,23 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
             </div>
           )}
 
+          {assignment.typeAssignment === "MULTIPLE_CHOICE" && assignment.quizUrl && (
+            <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-4 space-y-2">
+              <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider">Đường dẫn Google Forms</p>
+              <div className="flex items-center justify-between">
+                <a
+                  href={assignment.quizUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-purple-600 hover:text-purple-800 break-all underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {assignment.quizUrl}
+                </a>
+              </div>
+            </div>
+          )}
+
           {assignment.AssignmentAttachments.length > 0 && (
             <div>
               <p className="text-xs font-medium text-gray-500 mb-2">Tài liệu đính kèm</p>

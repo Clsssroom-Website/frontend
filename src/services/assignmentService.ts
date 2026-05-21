@@ -33,6 +33,8 @@ export const assignmentService = {
       description?: string;
       deadline: string;
       typeAssignment?: string;
+      quizUrl?: string;
+      quizData?: string;
       files?: File[];
     }
   ): Promise<ApiResponse<Assignment>> => {
@@ -41,6 +43,8 @@ export const assignmentService = {
     if (payload.description) formData.append("description", payload.description);
     formData.append("deadline", payload.deadline);
     if (payload.typeAssignment) formData.append("typeAssignment", payload.typeAssignment);
+    if (payload.quizUrl) formData.append("quizUrl", payload.quizUrl);
+    if (payload.quizData) formData.append("quizData", payload.quizData);
 
     (payload.files ?? []).forEach((file) => {
       formData.append("attachments", file);
@@ -65,6 +69,8 @@ export const assignmentService = {
       description?: string;
       deadline?: string;
       typeAssignment?: string;
+      quizUrl?: string;
+      quizData?: string;
       keepAttachmentIds?: string[]; // IDs của attachments cũ muốn giữ
       files?: File[];               // Files mới upload
     }
@@ -75,6 +81,8 @@ export const assignmentService = {
     if (payload.deadline !== undefined) formData.append("deadline", payload.deadline);
     if (payload.typeAssignment !== undefined)
       formData.append("typeAssignment", payload.typeAssignment);
+    if (payload.quizUrl !== undefined) formData.append("quizUrl", payload.quizUrl);
+    if (payload.quizData !== undefined) formData.append("quizData", payload.quizData);
 
     // Gửi danh sách attachmentIds muốn giữ lại dưới dạng JSON
     if (payload.keepAttachmentIds !== undefined) {
@@ -139,6 +147,21 @@ export const assignmentService = {
     );
     return response as unknown as ApiResponse<Submission>;
   },
+
+  /**
+   * Nộp bài trắc nghiệm và tự động chấm điểm
+   */
+  submitQuizAssignment: async (
+    assignmentId: string,
+    answers: { questionId: string; selectedAnswer: string }[]
+  ): Promise<ApiResponse<Submission>> => {
+    const response = await api.post<ApiResponse<Submission>>(
+      `/students/assignments/${assignmentId}/submit-quiz`,
+      { quizAnswers: JSON.stringify(answers) }
+    );
+    return response as unknown as ApiResponse<Submission>;
+  },
+
 
   /**
    * Xem bài nộp và điểm (Dành cho học sinh)

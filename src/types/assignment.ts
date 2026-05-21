@@ -6,6 +6,22 @@ export interface Attachment {
   fileSize?: string | null;
 }
 
+export interface QuizQuestion {
+  id: string;
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+  score: number;
+}
+
+export interface StudentQuizAnswer {
+  questionId: string;
+  questionText: string;
+  selectedAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+}
+
 export interface Assignment {
   assignmentId: string;
   classId: string;
@@ -15,6 +31,8 @@ export interface Assignment {
   typeAssignment: string;
   status: string;
   createdAt: string;
+  quizUrl?: string;
+  quizData?: string;
   totalSubmissions?: number;
   AssignmentAttachments: Attachment[];
 }
@@ -67,6 +85,7 @@ export interface Submission {
   studentId: string;
   submittedAt: string;
   status: string;
+  quizAnswers?: string;
   student: SubmissionStudent | null;
   SubmissionAttachments: SubmissionAttachment[];
   grade: SubmissionGrade | null;
