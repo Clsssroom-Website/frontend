@@ -2,35 +2,110 @@ import React, { useState, useEffect, useRef } from "react";
 import { FileText, UploadCloud, Clock, CheckCircle2, Download, ExternalLink, Paperclip, X, AlertCircle } from "lucide-react";
 import { assignmentService } from "../../../../services/assignmentService";
 import { formatDeadline } from "../../../../utils/dateUtils";
+import type { Assignment, Submission, QuizQuestion, StudentQuizAnswer } from "../../../../types/assignment";
 
 interface AssignmentDetailViewProps {
-  assignment: any;
+  assignment: Assignment;
   onBack: () => void;
 }
 
 export default function AssignmentDetailView({ assignment, onBack }: AssignmentDetailViewProps) {
-  const [submission, setSubmission] = useState<any>(null);
+  const [submission, setSubmission] = useState<Submission | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
+
+  const quizQuestions = React.useMemo<QuizQuestion[]>(() => {
+    if (!assignment.quizData) return [];
+    try {
+      return typeof assignment.quizData === "string"
+        ? JSON.parse(assignment.quizData)
+        : assignment.quizData;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }, [assignment.quizData]);
+
+  const studentAnswers = React.useMemo<StudentQuizAnswer[]>(() => {
+    if (!submission?.quizAnswers) return [];
+    try {
+      return typeof submission.quizAnswers === "string"
+        ? JSON.parse(submission.quizAnswers)
+        : submission.quizAnswers;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }, [submission]);
+
+  const handleSelectOption = (questionId: string, option: string) => {
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionId]: option,
+    }));
+  };
+
   useEffect(() => {
-    fetchSubmission();
+    let active = true;
+    const fetchSub = async () => {
+      try {
+        setLoading(true);
+        const res = await assignmentService.getSubmissionAndGrade(assignment.assignmentId);
+        if (active && res.success && res.data) {
+          setSubmission(res.data);
+        }
+      } catch (err: unknown) {
+        console.error(err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    fetchSub();
+    return () => {
+      active = false;
+    };
   }, [assignment.assignmentId]);
 
-  const fetchSubmission = async () => {
+  const handleQuizSubmit = async () => {
+    const answeredCount = Object.keys(selectedAnswers).length;
+    const totalCount = quizQuestions.length;
+
+    if (answeredCount < totalCount) {
+      const confirmSubmit = window.confirm(
+        `Bạn mới trả lời ${answeredCount}/${totalCount} câu hỏi. Bạn có chắc chắn muốn nộp bài không?`
+      );
+      if (!confirmSubmit) return;
+    } else {
+      const confirmSubmit = window.confirm("Bạn có chắc chắn muốn nộp bài trắc nghiệm này không?");
+      if (!confirmSubmit) return;
+    }
+
     try {
-      setLoading(true);
-      const res = await assignmentService.getSubmissionAndGrade(assignment.assignmentId);
-      if (res.success && res.data) {
+      setSubmitting(true);
+      setError(null);
+
+      const answersPayload = quizQuestions.map((q) => ({
+        questionId: q.id,
+        selectedAnswer: selectedAnswers[q.id] || "",
+      }));
+
+      const res = await assignmentService.submitQuizAssignment(assignment.assignmentId, answersPayload);
+      if (res.success) {
         setSubmission(res.data);
+        alert("Nộp bài trắc nghiệm thành công!");
+      } else {
+        setError(res.message || "Có lỗi xảy ra khi nộp bài.");
       }
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(errorObj.response?.data?.message || errorObj.message || "Lỗi kết nối.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -62,8 +137,9 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
       } else {
         setError(res.message || "Có lỗi xảy ra khi nộp bài.");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Lỗi kết nối.");
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(errorObj.response?.data?.message || errorObj.message || "Lỗi kết nối.");
     } finally {
       setSubmitting(false);
     }
@@ -72,11 +148,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
   const isOverdue = new Date(assignment.deadline) < new Date();
   const hasSubmitted = !!submission;
 
-  const getFileUrl = (uri: string) => {
-    if (!uri) return "";
-    if (uri.startsWith("http")) return uri;
-    return `${import.meta.env.VITE_MINIO_URL || "http://localhost:9000"}/${uri}`;
-  };
+  const getFileUrl = (uri: string) => uri || "";
 
   if (loading) {
     return <div className="py-12 text-center text-gray-500">Đang tải thông tin bài tập...</div>;
@@ -130,18 +202,150 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
 
               <div>
                 <h3 className="text-sm font-semibold text-gray-800 mb-2">Hướng dẫn chi tiết:</h3>
-                <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap leading-relaxed">
+                <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap leading-relaxed font-normal">
                   {assignment.description || "Không có hướng dẫn chi tiết."}
                 </div>
               </div>
             </div>
+
+            {assignment.typeAssignment === "MULTIPLE_CHOICE" && (
+              <div className="space-y-6">
+                <div className="bg-indigo-50/30 border border-indigo-100 rounded-xl p-5 shadow-sm">
+                  <h3 className="text-base font-semibold text-indigo-950 mb-2">
+                    📋 Bài trắc nghiệm trực tuyến
+                  </h3>
+                  <p className="text-xs text-gray-600">
+                    {hasSubmitted
+                      ? "Xem lại kết quả bài làm của bạn bên dưới. Các câu hỏi đã được chấm điểm tự động."
+                      : "Vui lòng hoàn thành các câu hỏi bên dưới. Nhấp vào phương án bạn chọn và nhấn nút Nộp bài để hoàn tất."}
+                  </p>
+                </div>
+
+                {quizQuestions.length === 0 ? (
+                  <div className="text-center py-10 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-500 font-medium">
+                    Bài trắc nghiệm này không có câu hỏi nào.
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {quizQuestions.map((q, idx) => {
+                      const studentAns = studentAnswers.find((a) => a.questionId === q.id);
+                      const selectedAnswer = studentAns ? studentAns.selectedAnswer : "";
+                      const isCorrect = studentAns ? studentAns.isCorrect : false;
+
+                      return (
+                        <div
+                          key={q.id}
+                          className={`border rounded-xl p-5 shadow-sm space-y-4 bg-white transition-colors ${
+                            hasSubmitted
+                              ? isCorrect
+                                ? "border-green-200 bg-green-50/10"
+                                : selectedAnswer
+                                ? "border-red-200 bg-red-50/10"
+                                : "border-gray-200"
+                              : "border-gray-200 hover:border-indigo-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold shrink-0">
+                                {idx + 1}
+                              </span>
+                              <h4 className="text-sm font-semibold text-gray-800 leading-relaxed">
+                                {q.questionText}
+                              </h4>
+                            </div>
+                            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded shrink-0">
+                              {q.score || 1} điểm
+                            </span>
+                          </div>
+
+                          <div className="space-y-2">
+                            {q.options.map((opt: string, oIdx: number) => {
+                              const isOptionSelected = hasSubmitted
+                                ? selectedAnswer === opt
+                                : selectedAnswers[q.id] === opt;
+
+                              const isOptionCorrect = q.correctAnswer === opt;
+
+                              let optionStyle = "border-gray-200 hover:bg-gray-50/80";
+                              if (hasSubmitted) {
+                                if (isOptionCorrect) {
+                                  optionStyle = "border-green-300 bg-green-50 text-green-800 font-medium";
+                                } else if (isOptionSelected && !isOptionCorrect) {
+                                  optionStyle = "border-red-300 bg-red-50 text-red-800 font-medium";
+                                } else {
+                                  optionStyle = "border-gray-200 opacity-60";
+                                }
+                              } else if (isOptionSelected) {
+                                optionStyle = "border-indigo-500 bg-indigo-50/50 text-indigo-900 font-medium";
+                              }
+
+                              return (
+                                <label
+                                  key={oIdx}
+                                  className={`flex items-center gap-3 p-3 rounded-lg border text-xs cursor-pointer transition ${optionStyle}`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`question-${q.id}`}
+                                    value={opt}
+                                    checked={isOptionSelected}
+                                    onChange={() => !hasSubmitted && handleSelectOption(q.id, opt)}
+                                    disabled={hasSubmitted}
+                                    className="accent-indigo-600 shrink-0"
+                                  />
+                                  <span className="flex-1 leading-relaxed">{opt}</span>
+
+                                  {hasSubmitted && isOptionSelected && (
+                                    <span className="text-[10px] uppercase font-bold tracking-wider shrink-0">
+                                      {isOptionCorrect ? (
+                                        <span className="text-green-600">Bạn chọn đúng</span>
+                                      ) : (
+                                        <span className="text-red-600">Bạn chọn sai</span>
+                                      )}
+                                    </span>
+                                  )}
+                                  {hasSubmitted && isOptionCorrect && !isOptionSelected && (
+                                    <span className="text-[10px] uppercase font-bold tracking-wider text-green-600 shrink-0">
+                                      Đáp án đúng
+                                    </span>
+                                  )}
+                                </label>
+                              );
+                            })}
+                          </div>
+
+                          {hasSubmitted && (
+                            <div className="text-xs pt-1">
+                              {!selectedAnswer ? (
+                                <p className="text-gray-500 italic">
+                                  ⚠️ Bạn đã bỏ qua câu hỏi này. Đáp án đúng là:{" "}
+                                  <strong className="text-green-700">{q.correctAnswer}</strong>
+                                </p>
+                              ) : !isCorrect ? (
+                                <p className="text-red-600">
+                                  ❌ Sai rồi. Đáp án đúng phải là:{" "}
+                                  <strong className="text-green-700">{q.correctAnswer}</strong>
+                                </p>
+                              ) : (
+                                <p className="text-green-600">✓ Chính xác!</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Teacher Attachments */}
             {assignment.AssignmentAttachments && assignment.AssignmentAttachments.length > 0 && (
               <div className="rounded-xl border border-gray-200 p-5 shadow-sm">
                 <h3 className="text-sm font-semibold text-gray-800 mb-4">Tài liệu đính kèm từ Giáo viên</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {assignment.AssignmentAttachments.map((att: any) => (
+                  {assignment.AssignmentAttachments.map((att) => (
                     <a
                       key={att.attachmentId}
                       href={getFileUrl(att.fileUrl)}
@@ -185,120 +389,181 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                 </span>
               </div>
 
-              {hasSubmitted ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 mb-4 shadow-sm">
-                    <CheckCircle2 size={20} className="shrink-0" />
-                    <span className="text-sm font-medium">Bạn đã nộp bài tập này</span>
-                  </div>
+              {assignment.typeAssignment === "MULTIPLE_CHOICE" ? (
+                hasSubmitted ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 mb-4 shadow-sm">
+                      <CheckCircle2 size={20} className="shrink-0" />
+                      <span className="text-sm font-medium">Bạn đã hoàn thành bài tập trắc nghiệm này</span>
+                    </div>
 
-                  {submission.SubmissionAttachments && submission.SubmissionAttachments.length > 0 && (
-                    <div className="space-y-2">
-                      {submission.SubmissionAttachments.map((att: any) => (
-                        <a
-                          key={att.attachmentId}
-                          href={getFileUrl(att.fileUrl || att.fileUri)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition group shadow-sm"
-                        >
-                          <Paperclip size={16} className="text-gray-400" />
-                          <span className="text-sm text-gray-700 truncate flex-1 group-hover:text-indigo-600">
-                            {att.fileName}
+                    {submission.grade !== undefined && submission.grade !== null && (
+                      <div className="mt-6 pt-5 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">Điểm số:</span>
+                          <span className="text-2xl font-bold text-indigo-600">
+                            {submission.grade.score}
+                            <span className="text-sm text-gray-400 font-medium">/10</span>
                           </span>
-                          <ExternalLink size={14} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Score section if graded */}
-                  {submission.grade !== undefined && submission.grade !== null && (
-                    <div className="mt-6 pt-5 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-600">Điểm số:</span>
-                        <span className="text-2xl font-bold text-indigo-600">{submission.grade.score}<span className="text-sm text-gray-400 font-medium">/10</span></span>
-                      </div>
-                      {submission.grade.comment && (
-                        <div className="mt-3 text-sm text-gray-700 bg-indigo-50 p-3.5 rounded-lg border border-indigo-100 shadow-sm">
-                          <span className="font-semibold text-indigo-900 block mb-1">Giáo viên nhận xét:</span>
-                          <p className="leading-relaxed">{submission.grade.comment}</p>
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  <p className="text-xs text-gray-500 text-center mt-5 pt-3 border-t border-gray-50">
-                    Không thể thay đổi bài đã nộp.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Upload area */}
-                  <label className="w-full flex flex-col items-center justify-center py-8 px-4 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-colors cursor-pointer group">
-                    <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 group-hover:shadow transition-all duration-300">
-                      <UploadCloud size={24} className="text-gray-400 group-hover:text-indigo-500 transition-colors" />
-                    </div>
-                    <span className="text-sm font-medium text-indigo-600 group-hover:text-indigo-700">Thêm tệp đính kèm</span>
-                    <span className="text-xs text-gray-400 mt-1 text-center">Hỗ trợ: PDF, DOCX, ZIP (Max 25MB)</span>
-                    <input
-                      type="file"
-                      multiple
-                      className="hidden"
-                      ref={fileInputRef}
-                      onChange={handleFileSelect}
-                    />
-                  </label>
-
-                  {/* Selected files list */}
-                  {selectedFiles.length > 0 && (
-                    <div className="space-y-2 mt-4 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-                      {selectedFiles.map((file, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-gray-200 shadow-sm rounded-lg text-sm">
-                          <div className="flex items-center gap-2 overflow-hidden">
-                            <FileText size={16} className="text-blue-500 shrink-0" />
-                            <span className="truncate text-gray-700 font-medium">{file.name}</span>
+                        {submission.grade.comment && (
+                          <div className="mt-3 text-sm text-gray-700 bg-indigo-50 p-3.5 rounded-lg border border-indigo-100 shadow-sm">
+                            <span className="font-semibold text-indigo-900 block mb-1">Nhận xét:</span>
+                            <p className="leading-relaxed font-normal">{submission.grade.comment}</p>
                           </div>
-                          <button
-                            onClick={() => removeFile(idx)}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition shrink-0"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {error && (
-                    <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 shadow-sm flex items-start gap-2 mt-3">
-                      <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  {/* Submit button */}
-                  <button
-                    onClick={handleSubmit}
-                    disabled={submitting || isOverdue || selectedFiles.length === 0}
-                    className="w-full py-3 mt-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {submitting ? (
-                      <>
-                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Đang nộp bài...
-                      </>
-                    ) : (
-                      <>
-                        <UploadCloud size={18} />
-                        Nộp bài tập
-                      </>
+                        )}
+                      </div>
                     )}
-                  </button>
-                  <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1 mt-3">
-                    <AlertCircle size={12} /> Bạn không thể sửa đổi sau khi nộp
-                  </p>
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-sm text-indigo-800 bg-indigo-50 border border-indigo-100 rounded-xl p-4 leading-relaxed font-normal">
+                      <p className="font-semibold text-indigo-950 mb-1">Trạng thái bài làm:</p>
+                      <p className="text-xs">
+                        Đã chọn:{" "}
+                        <strong className="text-indigo-950">
+                          {Object.keys(selectedAnswers).length} / {quizQuestions.length}
+                        </strong>{" "}
+                        câu hỏi.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleQuizSubmit}
+                      disabled={submitting || quizQuestions.length === 0 || isOverdue}
+                      className="w-full py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Đang nộp bài...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={18} />
+                          Nộp bài kiểm tra
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )
+              ) : (
+                hasSubmitted ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 mb-4 shadow-sm">
+                      <CheckCircle2 size={20} className="shrink-0" />
+                      <span className="text-sm font-medium">Bạn đã nộp bài tập này</span>
+                    </div>
+
+                    {submission.SubmissionAttachments && submission.SubmissionAttachments.length > 0 && (
+                      <div className="space-y-2">
+                        {submission.SubmissionAttachments.map((att) => (
+                          <a
+                            key={att.attachmentId}
+                            href={getFileUrl(att.fileUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition group shadow-sm"
+                          >
+                            <Paperclip size={16} className="text-gray-400" />
+                            <span className="text-sm text-gray-700 truncate flex-1 group-hover:text-indigo-600">
+                              {att.fileName}
+                            </span>
+                            <ExternalLink size={14} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Score section if graded */}
+                    {submission.grade !== undefined && submission.grade !== null && (
+                      <div className="mt-6 pt-5 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">Điểm số:</span>
+                          <span className="text-2xl font-bold text-indigo-600">{submission.grade.score}<span className="text-sm text-gray-400 font-medium">/10</span></span>
+                        </div>
+                        {submission.grade.comment && (
+                          <div className="mt-3 text-sm text-gray-700 bg-indigo-50 p-3.5 rounded-lg border border-indigo-100 shadow-sm">
+                            <span className="font-semibold text-indigo-900 block mb-1">Giáo viên nhận xét:</span>
+                            <p className="leading-relaxed font-normal">{submission.grade.comment}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <p className="text-xs text-gray-500 text-center mt-5 pt-3 border-t border-gray-50 font-normal">
+                      Không thể thay đổi bài đã nộp.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Upload area */}
+                    <label className="w-full flex flex-col items-center justify-center py-8 px-4 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-400 transition-colors cursor-pointer group">
+                      <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 group-hover:shadow transition-all duration-300">
+                        <UploadCloud size={24} className="text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                      </div>
+                      <span className="text-sm font-medium text-indigo-600 group-hover:text-indigo-700">Thêm tệp đính kèm</span>
+                      <span className="text-xs text-gray-400 mt-1 text-center font-normal">Hỗ trợ: PDF, DOCX, ZIP (Max 25MB)</span>
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                      />
+                    </label>
+
+                    {/* Selected files list */}
+                    {selectedFiles.length > 0 && (
+                      <div className="space-y-2 mt-4 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                        {selectedFiles.map((file, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-gray-200 shadow-sm rounded-lg text-sm">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <FileText size={16} className="text-blue-500 shrink-0" />
+                              <span className="truncate text-gray-700 font-medium">{file.name}</span>
+                            </div>
+                            <button
+                              onClick={() => removeFile(idx)}
+                              title="Xóa tệp đính kèm"
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition shrink-0"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 shadow-sm flex items-start gap-2 mt-3 font-normal">
+                        <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    {/* Submit button */}
+                    <button
+                      onClick={handleSubmit}
+                      disabled={submitting || isOverdue || selectedFiles.length === 0}
+                      className="w-full py-3 mt-4 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Đang nộp bài...
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud size={18} />
+                          Nộp bài tập
+                        </>
+                      )}
+                    </button>
+                    <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1 mt-3 font-normal">
+                      <AlertCircle size={12} /> Bạn không thể sửa đổi sau khi nộp
+                    </p>
+                  </div>
+                )
               )}
             </div>
           </div>

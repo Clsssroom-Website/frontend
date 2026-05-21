@@ -1,17 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { assignmentService } from "../../../../services/assignmentService";
+import type { Assignment } from "../../../../types/assignment";
 import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
 import AssignmentDetailView from "./AssignmentDetailView";
-
-interface Assignment {
-  assignmentId: string;
-  title: string;
-  description: string;
-  deadline: string;
-  typeAssignment: string;
-  status: string;
-  createdAt: string;
-}
 
 interface AssignmentsTabProps {
   classId: string;
@@ -30,7 +21,7 @@ export default function StudentAssignmentsTab({ classId, initialAssignmentId }: 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const data: any = await assignmentService.getAssignments(classId, "student");
+        const data = await assignmentService.getAssignments(classId, "student");
         if (data && data.success) {
           setAssignments(data.data);
           if (initialId.current) {
@@ -42,8 +33,9 @@ export default function StudentAssignmentsTab({ classId, initialAssignmentId }: 
         } else {
           setError(data?.message || "Không thể tải danh sách bài tập.");
         }
-      } catch (err: any) {
-        setError(err.message || "Lỗi kết nối. Vui lòng thử lại.");
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        setError(error.message || "Lỗi kết nối. Vui lòng thử lại.");
       } finally {
         setLoading(false);
       }
