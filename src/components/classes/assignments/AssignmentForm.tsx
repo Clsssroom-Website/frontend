@@ -105,6 +105,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
       } else {
         setError(res.message || "Thao tác thất bại.");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.response?.data?.message || err.message || "Lỗi kết nối.");
     } finally {
