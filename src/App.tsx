@@ -9,7 +9,6 @@ import StudentClasses from "./pages/student/classes/StudentClasses";
 import TeacherClassDetail from "./pages/teacher/classes/ClassDetail";
 import StudentClassDetail from "./pages/student/classes/ClassDetail";
 import SettingsPage from "./pages/student/settings/Settings";
-import ReportsPage from "./pages/teacher/reports/Reports";
 
 import GuestGuard from "./components/guards/GuestGuard";
 import AuthGuard from "./components/guards/AuthGuard";
@@ -30,7 +29,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
-
+ 
         {/* Protected Routes */}
         <Route element={<AuthGuard />}>
           <Route element={<MainLayout />}>
@@ -39,7 +38,6 @@ function App() {
               <Route path="/teacher/dashboard" element={<TeacherDashboard/>} />
               <Route path="/teacher/classes" element={<TeacherClasses />} />
               <Route path="/teacher/classes/:classId" element={<TeacherClassDetail />} />
-              <Route path="/teacher/reports" element={<ReportsPage />} />
             </Route>
 
             {/* Student Routes */}

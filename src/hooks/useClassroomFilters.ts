@@ -9,17 +9,11 @@ export function useClassroomFilters(classes: Classroom[]) {
     if (!Array.isArray(classes)) return [];
     
     return classes.filter((cls) => {
-      // Vì đã gọi API tìm kiếm, nên phần search ở frontend có thể tắt hoặc giữ lại làm 2 lớp lọc
-      const matchesSearch = 
-        (cls.className?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
-        (cls.description?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (cls.room?.toLowerCase() || "").includes(searchQuery.toLowerCase());
-      
-      if (statusFilter === "All Status") return matchesSearch;
+      if (statusFilter === "All Status") return true;
       const isStatusMatch = statusFilter === "Active" ? cls.status === "ACTIVE" : cls.status !== "ACTIVE";
-      return matchesSearch && isStatusMatch;
+      return isStatusMatch;
     });
-  }, [classes, searchQuery, statusFilter]);
+  }, [classes, statusFilter]);
 
   return {
     searchQuery,
