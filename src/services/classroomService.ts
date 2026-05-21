@@ -67,12 +67,19 @@ export const classroomService = {
   },
 
   /**
-   * Lấy danh sách điểm số của học sinh trong lớp
+   * Lấy danh sách điểm số của học sinh trong lớp (Dành cho học sinh xem điểm của mình)
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getStudentGrades(classId: string): Promise<any> {
     return await api.get(`/students/classes/${classId}/grades`);
   },
 
+  /**
+   * Lấy bảng điểm của cả lớp bao gồm điểm các bài tập và điểm trung bình (Dành cho giáo viên)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getClassGrades(classId: string): Promise<any> {
+    return await api.get(`/classes/${classId}/grades`);
+  },
 };
 

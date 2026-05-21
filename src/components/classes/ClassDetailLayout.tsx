@@ -71,62 +71,46 @@ export default function ClassDetailLayout({
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* LEFT SIDEBAR */}
-        <div className="hidden md:block col-span-1 space-y-4">
-          {/* Mã lớp - chỉ teacher thấy */}
-          {role === "teacher" && classroom.joinCode && (
-            <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-medium text-sm text-gray-700">Mã lớp</h3>
-                <button className="p-1 hover:bg-gray-100 rounded-full text-gray-700">
-                  <MoreVertical size={16} />
-                </button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xl font-semibold text-gray-800">{classroom.joinCode}</span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(classroom.joinCode);
-                    alert("Đã copy mã!");
-                  }}
-                  className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition"
-                >
-                  <Copy size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Google Meet Box */}
-          {/* <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2 text-gray-700 font-medium text-sm">
-                <div className="bg-green-100 p-1.5 rounded-md">
-                  <Video size={16} className="text-green-600" />
+      <div className={`max-w-6xl mx-auto px-4 py-6 ${activeTab === "stream" ? "grid grid-cols-1 md:grid-cols-4 gap-6" : ""}`}>
+        {/* LEFT SIDEBAR — chỉ hiển thị ở tab Bảng tin */}
+        {activeTab === "stream" && (
+          <div className="hidden md:block col-span-1 space-y-4">
+            {/* Mã lớp - chỉ teacher thấy */}
+            {role === "teacher" && classroom.joinCode && (
+              <div className="border border-gray-200 rounded-xl p-4 shadow-sm">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-sm text-gray-700">Mã lớp</h3>
+                  <button className="p-1 hover:bg-gray-100 rounded-full text-gray-700">
+                    <MoreVertical size={16} />
+                  </button>
                 </div>
-                Meet
+                <div className="flex items-center justify-between">
+                  <span className="text-xl font-semibold text-gray-800">{classroom.joinCode}</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(classroom.joinCode);
+                      alert("Đã copy mã!");
+                    }}
+                    className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition"
+                  >
+                    <Copy size={16} />
+                  </button>
+                </div>
               </div>
-              <button className="p-1 hover:bg-gray-100 rounded-full text-gray-700">
-                <MoreVertical size={16} />
-              </button>
-            </div>
-            <button className="w-full py-2 border border-gray-300 text-indigo-600 font-medium rounded-full hover:bg-indigo-50 transition">
-              Tham gia
-            </button>
-          </div> */}
+            )}
 
-          {/* Thông tin lớp */}
-          {classroom.room && (
-            <div className="border border-gray-200 rounded-xl p-4 shadow-sm text-sm text-gray-600">
-              <p className="font-medium text-gray-700 mb-1">Phòng học</p>
-              <p>{classroom.room}</p>
-            </div>
-          )}
-        </div>
+            {/* Thông tin lớp */}
+            {classroom.room && (
+              <div className="border border-gray-200 rounded-xl p-4 shadow-sm text-sm text-gray-600">
+                <p className="font-medium text-gray-700 mb-1">Phòng học</p>
+                <p>{classroom.room}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* RIGHT CONTENT — Tab Content */}
-        <div className="col-span-1 md:col-span-3">
+        <div className={activeTab === "stream" ? "col-span-1 md:col-span-3" : "w-full"}>
           {children}
         </div>
       </div>

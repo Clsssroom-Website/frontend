@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { classroomService } from "../../../services/classroomService";
-import { Menu, Users, FileText, Edit3 } from "lucide-react";
+import { Menu, Users, FileText, Edit3, TrendingUp } from "lucide-react";
 
 import ClassDetailLayout from "../../../components/classes/ClassDetailLayout";
 import StreamTab from "../../../components/classes/StreamTab";
 import TeacherPeopleTab from "./tabs/PeopleTab";
 import TeacherAssignmentsTab from "./tabs/AssignmentsTab";
 import TeacherDocumentsTab from "./tabs/DocumentsTab";
+import TeacherGradesTab from "./tabs/GradesTab";
 
 import type { Classroom } from "../../../types/classroom";
 
@@ -16,6 +17,7 @@ const TEACHER_TABS = [
   { id: "people", label: "Danh sách sinh viên", icon: <Users size={18} /> },
   { id: "classwork", label: "Bài tập", icon: <FileText size={18} /> },
   { id: "documents", label: "Tài liệu", icon: <Edit3 size={18} /> },
+  { id: "grades", label: "Bảng điểm", icon: <TrendingUp size={18} /> },
 ];
 
 export default function TeacherClassDetail() {
@@ -43,6 +45,7 @@ export default function TeacherClassDetail() {
       case "people": return <TeacherPeopleTab classId={classId!} />;
       case "classwork": return <TeacherAssignmentsTab classId={classId!} />;
       case "documents": return <TeacherDocumentsTab classId={classId!} />;
+      case "grades": return <TeacherGradesTab classId={classId!} />;
       default: return null;
     }
   };
