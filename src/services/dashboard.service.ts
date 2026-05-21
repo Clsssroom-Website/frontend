@@ -22,5 +22,13 @@ export const dashboardService = {
   getDashboardStats: async (): Promise<ApiResponse<DashboardStats>> => {
     const response = await api.get<ApiResponse<DashboardStats>>("/dashboard/stats");
     return response as unknown as ApiResponse<DashboardStats>;
+  },
+
+  /**
+   * Lấy toàn bộ dữ liệu cho trang Dashboard của học sinh
+   */
+  getStudentDashboard: async (): Promise<ApiResponse<any>> => {
+    const response = await api.get<ApiResponse<any>>("/students/dashboard");
+    return response as unknown as ApiResponse<any>;
   }
 };

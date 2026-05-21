@@ -9,7 +9,7 @@ const GuestGuard = () => {
     if (user?.role === "teacher") {
       return <Navigate to="/teacher/dashboard" replace />;
     }
-    return <Navigate to="/dashboard" replace />; // Student dashboard
+    return <Navigate to="/student/dashboard" replace />;
   }
 
   return <Outlet />;
