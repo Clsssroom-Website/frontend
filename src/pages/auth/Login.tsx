@@ -35,7 +35,7 @@ export default function LoginPage() {
       setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
       
       setTimeout(() => {
-        const redirectTo = user.role === "teacher" ? "/teacher/dashboard" : "/dashboard";
+        const redirectTo = user.role === "teacher" ? "/teacher/dashboard" : "/student/dashboard";
         navigate(redirectTo, { replace: true });
       }, 1200);
     } catch (err: any) {

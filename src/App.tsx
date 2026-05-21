@@ -42,7 +42,7 @@ function App() {
 
             {/* Student Routes */}
             <Route element={<RoleGuard allowedRoles={["student"]} />}>
-              <Route path="/dashboard" element={<StudentDashboard/>} />
+              <Route path="/student/dashboard" element={<StudentDashboard/>} />
               <Route path="/student/classes" element={<StudentClasses />} />
               <Route path="/student/classes/:classId" element={<StudentClassDetail />} />
               <Route path="/student/settings" element={<SettingsPage />} />
