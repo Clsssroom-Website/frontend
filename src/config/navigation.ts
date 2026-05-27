@@ -1,4 +1,4 @@
-import { LayoutDashboard, BookOpen, Settings } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Settings, ClipboardCheck } from 'lucide-react';
 
 export const teacherLinks = [
   {
@@ -7,9 +7,14 @@ export const teacherLinks = [
     icon: LayoutDashboard,
   },
   {
-    label: 'Manage Classes',
+    label: 'Quản lý lớp học',
     href: '/teacher/classes',
     icon: BookOpen,
+  },
+  {
+    label: 'Chấm bài',
+    href: '/teacher/submissions',
+    icon: ClipboardCheck,
   },
   {
     label: 'Settings',

@@ -31,5 +31,13 @@ export const dashboardService = {
   getStudentDashboard: async (): Promise<ApiResponse<any>> => {
     const response = await api.get<ApiResponse<any>>("/students/dashboard");
     return response as unknown as ApiResponse<any>;
+  },
+
+  /**
+   * Lấy danh sách bài nộp chưa chấm của giáo viên có phân trang
+   */
+  getPendingSubmissionsToGrade: async (page = 1, limit = 10): Promise<ApiResponse<any>> => {
+    const response = await api.get<ApiResponse<any>>(`/dashboard/submissions-to-grade?page=${page}&limit=${limit}`);
+    return response as unknown as ApiResponse<any>;
   }
 };

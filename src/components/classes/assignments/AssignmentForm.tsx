@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { X, UploadCloud, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { assignmentService } from "../../../services/assignmentService";
 import type { Assignment, AttachmentItem, QuizQuestionDraft, QuizOptionDraft } from "../../../types/assignment";
 import { toDatetimeLocal } from "../../../utils/dateUtils";
@@ -139,12 +140,25 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
-    const newItems: AttachmentItem[] = files.map((file) => ({
-      kind: "new" as const,
-      file,
-      previewName: file.name,
-    }));
-    setAttachments((prev) => [...prev, ...newItems]);
+    
+    const validItems: AttachmentItem[] = [];
+    const MAX_SIZE = 25 * 1024 * 1024; // 25MB
+    
+    for (const file of files) {
+      if (file.size > MAX_SIZE) {
+        toast.error(`Kích thước file "${file.name}" vượt quá 25MB.`);
+        continue;
+      }
+      validItems.push({
+        kind: "new" as const,
+        file,
+        previewName: file.name,
+      });
+    }
+
+    if (validItems.length > 0) {
+      setAttachments((prev) => [...prev, ...validItems]);
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -347,14 +361,14 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
           {/* Quiz builder hoặc File upload */}
           {typeAssignment === "MULTIPLE_CHOICE" ? (
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                <label className="block text-sm font-semibold text-gray-800">
+              <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
+                <label className="block text-sm font-bold text-gray-800">
                   Câu hỏi trắc nghiệm
                 </label>
                 <button
                   type="button"
                   onClick={addQuestion}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm"
                 >
                   <Plus size={14} />
                   Thêm câu hỏi
@@ -362,12 +376,12 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
               </div>
 
               {quizQuestions.length === 0 ? (
-                <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center gap-3">
-                  <span className="text-sm text-gray-400">Chưa có câu hỏi. Nhấn nút bên trên để thêm câu hỏi đầu tiên.</span>
+                <div className="text-center py-10 border-2 border-dashed border-indigo-100 rounded-xl bg-indigo-50/10 flex flex-col items-center gap-3">
+                  <span className="text-sm text-indigo-400 font-medium">Chưa có câu hỏi. Nhấn nút bên trên để thêm câu hỏi đầu tiên.</span>
                   <button
                     type="button"
                     onClick={addQuestion}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-indigo-700 border border-indigo-200 bg-indigo-50/50 rounded-lg hover:bg-indigo-50 transition"
                   >
                     <Plus size={16} />
                     Tạo câu hỏi
@@ -376,14 +390,14 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
               ) : (
                 <div className="space-y-5">
                   {quizQuestions.map((q, idx) => (
-                    <div key={q._tempId} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm space-y-4">
+                    <div key={q._tempId} className="border border-indigo-100 hover:border-indigo-200 rounded-xl p-4 bg-white shadow-sm space-y-4 transition">
                       {/* Header câu hỏi */}
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-2">
-                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-xs font-bold shrink-0">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold shrink-0">
                             {idx + 1}
                           </span>
-                          <span className="text-sm font-semibold text-gray-700">Câu hỏi</span>
+                          <span className="text-sm font-bold text-gray-800">Câu hỏi</span>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -398,13 +412,13 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                               step={0.25}
                               value={q.points}
                               onChange={(e) => updateQuestion(q._tempId, { points: parseFloat(e.target.value) || 1 })}
-                              className="w-16 px-2 py-1 text-center text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white"
+                              className="w-16 px-2 py-1 text-center text-xs border border-indigo-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white font-semibold text-indigo-700"
                             />
                           </div>
                           <button
                             type="button"
                             onClick={() => removeQuestion(q._tempId)}
-                            className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
+                            className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"
                             title="Xóa câu hỏi"
                           >
                             <Trash2 size={15} />
@@ -418,7 +432,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                         value={q.questionText}
                         onChange={(e) => updateQuestion(q._tempId, { questionText: e.target.value })}
                         placeholder="Nhập nội dung câu hỏi..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                       />
 
                       {/* Các phương án */}
@@ -470,7 +484,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                               <button
                                 type="button"
                                 onClick={() => removeOption(q._tempId, opt._tempId)}
-                                className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
+                                className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"
                                 title="Xóa phương án"
                               >
                                 <X size={13} />
@@ -482,7 +496,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                         <button
                           type="button"
                           onClick={() => addOption(q._tempId)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 font-medium hover:bg-gray-50 rounded-md transition border border-gray-200 mt-1"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-indigo-600 font-semibold hover:bg-indigo-50/50 rounded-md transition border border-indigo-200 mt-1"
                         >
                           <Plus size={12} />
                           Thêm phương án
@@ -499,38 +513,47 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                 <label className="block text-sm font-medium text-gray-700">
                   Tài liệu đính kèm
                 </label>
-                <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 cursor-pointer transition">
+                <label 
+                  htmlFor="teacher-attachment-input"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer transition"
+                >
                   <UploadCloud size={14} />
                   Thêm file
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileSelect}
-                  />
                 </label>
               </div>
 
               {attachments.length === 0 ? (
-                <label className="w-full py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-gray-400 hover:text-gray-600 transition flex flex-col items-center justify-center gap-3 cursor-pointer bg-gray-50/50">
-                  <input type="file" multiple className="hidden" onChange={handleFileSelect} />
-                  <UploadCloud size={26} className="text-gray-300" />
-                  <span className="text-sm font-medium">Nhấn để chọn file đính kèm</span>
-                  <span className="text-xs text-gray-400">PDF, DOCX, XLSX, PNG, JPG, ZIP — Tối đa 25MB/file</span>
+                <label 
+                  htmlFor="teacher-attachment-input"
+                  className="w-full py-8 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 hover:border-indigo-400 hover:text-indigo-800 transition flex flex-col items-center justify-center gap-3 cursor-pointer bg-indigo-50/20"
+                >
+                  <UploadCloud size={28} className="text-indigo-450 animate-pulse" />
+                  <span className="text-sm font-semibold">Nhấn để chọn file đính kèm</span>
+                  <span className="text-xs text-indigo-400">PDF, DOCX, XLSX, PNG, JPG, ZIP — Tối đa 25MB/file</span>
                 </label>
               ) : (
                 <div className="space-y-2">
                   {attachments.map((item, i) => (
                     <AttachmentDisplayRow key={i} item={item} onRemove={() => removeAttachment(i)} />
                   ))}
-                  <label className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 cursor-pointer mt-1 pl-1">
+                  <label 
+                    htmlFor="teacher-attachment-input"
+                    className="flex items-center gap-2 text-xs font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer mt-1.5 pl-1"
+                  >
                     <UploadCloud size={13} />
                     Thêm file khác
-                    <input type="file" multiple className="hidden" onChange={handleFileSelect} />
                   </label>
                 </div>
               )}
+
+              <input 
+                id="teacher-attachment-input"
+                type="file" 
+                multiple 
+                className="hidden" 
+                ref={fileInputRef}
+                onChange={handleFileSelect} 
+              />
             </div>
           )}
 

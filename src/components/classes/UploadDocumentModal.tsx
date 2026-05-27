@@ -147,6 +147,7 @@ export default function UploadDocumentModal({ isOpen, onClose, classId, onUpload
                   className="hidden" 
                   accept=".pdf,.docx"
                   multiple
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-3 text-indigo-600">
                   <UploadCloud size={24} />
@@ -183,19 +184,22 @@ export default function UploadDocumentModal({ isOpen, onClose, classId, onUpload
                   ))}
                 </div>
                 
-                {/* Add more button */}
-                <label className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer mt-1 pl-1 transition">
+                <label 
+                  htmlFor="upload-doc-add-more-input"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer mt-1 pl-1 transition"
+                >
                   <UploadCloud size={14} />
                   Thêm file khác
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    onChange={handleFileChange}
-                    accept=".pdf,.docx"
-                    multiple
-                    disabled={isUploading}
-                  />
                 </label>
+                <input 
+                  id="upload-doc-add-more-input"
+                  type="file" 
+                  className="hidden" 
+                  onChange={handleFileChange}
+                  accept=".pdf,.docx"
+                  multiple
+                  disabled={isUploading}
+                />
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
 import { CheckCircle2, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { SubmissionToGrade } from './types';
 
 interface SubmissionsToGradeProps {
@@ -28,9 +29,9 @@ export function SubmissionsToGrade({ submissions }: SubmissionsToGradeProps) {
           </div>
         ))}
         {submissions.length > 0 && (
-          <button className="mt-auto pt-2 w-full text-center text-sm text-blue-600 hover:underline flex items-center justify-center">
+          <Link to="/teacher/submissions" className="mt-auto pt-2 w-full text-center text-sm text-blue-600 hover:underline flex items-center justify-center">
             Xem tất cả bài nộp <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
+          </Link>
         )}
       </div>
     </div>

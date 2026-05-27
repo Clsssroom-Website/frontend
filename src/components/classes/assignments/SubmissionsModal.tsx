@@ -103,6 +103,18 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
     fetchSubmissions();
   }, [isOpen, classId, assignment.assignmentId]);
 
+  // Khóa cuộn trang nền khi mở modal
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const isQuiz = assignment.typeAssignment === "MULTIPLE_CHOICE";
@@ -118,8 +130,8 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
           <div>
@@ -277,13 +289,13 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
                     )}
 
                     {/* Files (ESSAY) */}
-                    {!isQuiz && sub.SubmissionAttachments.length > 0 && (
+                    {!isQuiz && (sub.SubmissionAttachments ?? []).length > 0 && (
                       <div className="pl-12">
                         <p className="text-xs font-medium text-gray-500 mb-1.5">
-                          Tệp bài làm ({sub.SubmissionAttachments.length})
+                          Tệp bài làm ({(sub.SubmissionAttachments ?? []).length})
                         </p>
                         <div className="space-y-1.5 max-h-28 overflow-y-auto">
-                          {sub.SubmissionAttachments.map((att) => {
+                          {(sub.SubmissionAttachments ?? []).map((att) => {
                             const isPdf = att.fileName?.toLowerCase().endsWith(".pdf");
                             const isImage = /\.(jpeg|jpg|gif|png|webp)$/i.test(att.fileName || "");
 
@@ -338,7 +350,7 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
                         </button>
 
                         {expandedQuizId === sub.submissionId && (
-                          <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
                             {quizAnswers.map((ans, i) => (
                               <div
                                 key={ans.questionId}
@@ -353,7 +365,7 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
                                   </p>
                                   <p className="text-gray-500">
                                     Đã chọn:{" "}
-                                    <span className="font-medium text-gray-700">
+                                    <span className="font-medium text-gray-700" style={{ wordBreak: "break-word" }}>
                                       {ans.selectedOptionText || ans.selectedOptionId}
                                     </span>
                                   </p>

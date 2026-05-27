@@ -9,6 +9,7 @@ import StudentClasses from "./pages/student/classes/StudentClasses";
 import TeacherClassDetail from "./pages/teacher/classes/ClassDetail";
 import StudentClassDetail from "./pages/student/classes/ClassDetail";
 import SettingsPage from "./pages/student/settings/Settings";
+import SubmissionsToGradePage from "./pages/teacher/submissions/SubmissionsToGradePage";
 
 import GuestGuard from "./components/guards/GuestGuard";
 import AuthGuard from "./components/guards/AuthGuard";
@@ -38,6 +39,7 @@ function App() {
               <Route path="/teacher/dashboard" element={<TeacherDashboard/>} />
               <Route path="/teacher/classes" element={<TeacherClasses />} />
               <Route path="/teacher/classes/:classId" element={<TeacherClassDetail />} />
+              <Route path="/teacher/submissions" element={<SubmissionsToGradePage />} />
             </Route>
 
             {/* Student Routes */}

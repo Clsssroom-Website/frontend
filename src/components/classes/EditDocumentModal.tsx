@@ -205,6 +205,7 @@ export default function EditDocumentModal({ isOpen, onClose, document: doc, onEd
                   accept=".pdf,.docx"
                   multiple
                   disabled={isUpdating}
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600">
                   <UploadCloud size={16} />

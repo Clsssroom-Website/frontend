@@ -139,7 +139,21 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setSelectedFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+      const filesArray = Array.from(e.target.files);
+      const validFiles: File[] = [];
+      const MAX_SIZE = 25 * 1024 * 1024; // 25MB
+
+      for (const file of filesArray) {
+        if (file.size > MAX_SIZE) {
+          toast.error(`Kích thước file "${file.name}" vượt quá 25MB.`);
+          continue;
+        }
+        validFiles.push(file);
+      }
+
+      if (validFiles.length > 0) {
+        setSelectedFiles((prev) => [...prev, ...validFiles]);
+      }
     }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -255,8 +269,8 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
 
                     let cardClass = "border-gray-200 bg-white";
                     if (hasSubmitted && result) {
-                      cardClass = result.isCorrect 
-                        ? "border-green-200 bg-green-50/5" 
+                      cardClass = result.isCorrect
+                        ? "border-green-200 bg-green-50/5"
                         : "border-red-200 bg-red-50/5";
                     }
 
@@ -280,11 +294,10 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                               {q.points} điểm
                             </span>
                             {hasSubmitted && result && (
-                              <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${
-                                result.isCorrect
+                              <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${result.isCorrect
                                   ? "border-green-300 bg-green-100 text-green-700"
                                   : "border-red-300 bg-red-100 text-red-700"
-                              }`}>
+                                }`}>
                                 {result.isCorrect ? "Đúng" : "Sai"}
                               </span>
                             )}
@@ -332,23 +345,21 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                                   checked={isStudentSelected}
                                   onChange={() => !hasSubmitted && handleSelectOption(q.questionId, opt.optionId)}
                                   disabled={hasSubmitted}
-                                  className={`shrink-0 ${
-                                    hasSubmitted
+                                  className={`shrink-0 ${hasSubmitted
                                       ? isCorrectOpt
                                         ? "accent-green-600"
                                         : "accent-red-600"
                                       : "accent-indigo-600"
-                                  }`}
+                                    }`}
                                 />
                                 <span className="flex-1 leading-relaxed">{opt.optionText}</span>
                                 {hasSubmitted && indicator && (
-                                  <span className={`text-xs font-semibold shrink-0 ${
-                                    isCorrectOpt
+                                  <span className={`text-xs font-semibold shrink-0 ${isCorrectOpt
                                       ? "text-green-600"
                                       : isStudentSelected
                                         ? "text-red-500"
                                         : "text-green-600"
-                                  }`}>
+                                    }`}>
                                     {indicator}
                                   </span>
                                 )}
@@ -412,13 +423,12 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm sticky top-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-semibold text-gray-800">Bài tập của bạn</h3>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
-                  hasSubmitted
+                <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${hasSubmitted
                     ? "bg-green-50 text-green-700 border-green-200"
                     : isOverdue
                       ? "bg-red-50 text-red-600 border-red-200"
                       : "bg-indigo-50 text-indigo-700 border-indigo-200"
-                }`}>
+                  }`}>
                   {hasSubmitted ? "Đã nộp" : isOverdue ? "Thiếu bài" : "Chưa nộp"}
                 </span>
               </div>
@@ -538,12 +548,22 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <label className="w-full flex flex-col items-center justify-center py-7 px-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition cursor-pointer">
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full flex flex-col items-center justify-center py-7 px-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition cursor-pointer"
+                    >
                       <UploadCloud size={22} className="text-gray-400 mb-2" />
                       <span className="text-sm font-medium text-gray-600">Chọn file nộp bài</span>
                       <span className="text-xs text-gray-400 mt-0.5">PDF, DOCX, ZIP — Max 25MB</span>
-                      <input type="file" multiple className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
-                    </label>
+                    </div>
+                    <input 
+                      type="file" 
+                      multiple 
+                      className="hidden" 
+                      ref={fileInputRef} 
+                      onChange={handleFileSelect} 
+                      onClick={(e) => e.stopPropagation()}
+                    />
 
                     {selectedFiles.length > 0 && (
                       <div className="space-y-1.5 max-h-40 overflow-y-auto">
