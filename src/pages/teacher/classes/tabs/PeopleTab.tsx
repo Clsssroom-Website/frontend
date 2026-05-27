@@ -18,10 +18,11 @@ interface Student {
 
 interface PeopleTabProps {
   classId: string;
+  isEnded?: boolean;
 }
 
 
-export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
+export default function TeacherPeopleTab({ classId, isEnded = false }: PeopleTabProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,13 +120,15 @@ export default function TeacherPeopleTab({ classId }: PeopleTabProps) {
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${enrollment.status === "JOINED" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                 {enrollment.status === "JOINED" ? "Đang học" : enrollment.status}
               </span>
-              <button
-                onClick={() => triggerRemoveStudent(enrollment.student.userId, enrollment.student.name)}
-                className="ml-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
-                title="Xóa học sinh này khỏi lớp"
-              >
-                <Trash2 size={16} />
-              </button>
+              {!isEnded && (
+                <button
+                  onClick={() => triggerRemoveStudent(enrollment.student.userId, enrollment.student.name)}
+                  className="ml-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
+                  title="Xóa học sinh này khỏi lớp"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
           ))}
         </div>

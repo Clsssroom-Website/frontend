@@ -9,9 +9,10 @@ import ConfirmModal from "../../../../components/common/ConfirmModal";
 interface AssignmentDetailViewProps {
   assignment: Assignment;
   onBack: () => void;
+  isEnded?: boolean;
 }
 
-export default function AssignmentDetailView({ assignment, onBack }: AssignmentDetailViewProps) {
+export default function AssignmentDetailView({ assignment, onBack, isEnded = false }: AssignmentDetailViewProps) {
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -392,26 +393,44 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                 <h3 className="text-sm font-semibold text-gray-800 mb-3">Tài liệu từ Giáo viên</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {assignment.AssignmentAttachments.map((att) => (
-                    <a
+                    <div
                       key={att.attachmentId}
-                      href={att.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-400 transition group bg-white"
+                      className="flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-400 transition bg-white"
                     >
-                      <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
-                        <FileText size={18} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-700 truncate">{att.fileName}</p>
-                        {att.fileSize && (
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {(parseInt(att.fileSize) / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        )}
-                      </div>
-                      <Download size={16} className="text-gray-400 shrink-0" />
-                    </a>
+                      <a
+                        href={att.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 flex-1 min-w-0"
+                        title="Xem tài liệu"
+                      >
+                        <div className="w-9 h-9 rounded bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                          <FileText size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-700 truncate hover:text-indigo-600 transition">{att.fileName}</p>
+                          {att.fileSize && (
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {(parseInt(att.fileSize) / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          )}
+                        </div>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (att.downloadUrl) {
+                            window.location.href = att.downloadUrl;
+                          } else {
+                            window.location.href = att.fileUrl;
+                          }
+                        }}
+                        className="p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 rounded transition shrink-0"
+                        title="Tải về"
+                      >
+                        <Download size={16} />
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -432,6 +451,13 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                   {hasSubmitted ? "Đã nộp" : isOverdue ? "Thiếu bài" : "Chưa nộp"}
                 </span>
               </div>
+
+              {isEnded && !hasSubmitted && (
+                <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 p-2.5 rounded-lg flex items-start gap-1.5 font-medium leading-relaxed">
+                  <span className="shrink-0 mt-0.5">⚠️</span> 
+                  <span>Lớp học đã kết thúc. Bạn chỉ có quyền xem nội dung và không thể nộp bài tập.</span>
+                </div>
+              )}
 
               {/* QUIZ panel */}
               {isQuiz ? (
@@ -485,7 +511,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
 
                     <button
                       onClick={handleQuizSubmit}
-                      disabled={submitting || quizQuestions.length === 0 || isOverdue}
+                      disabled={submitting || quizQuestions.length === 0 || isOverdue || isEnded}
                       className="w-full py-2.5 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition"
                     >
                       {submitting ? (
@@ -511,17 +537,35 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                     {submission.SubmissionAttachments && submission.SubmissionAttachments.length > 0 && (
                       <div className="space-y-1.5">
                         {submission.SubmissionAttachments.map((att) => (
-                          <a
+                          <div
                             key={att.attachmentId}
-                            href={att.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-sm"
+                            className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition text-sm bg-white"
                           >
-                            <FileText size={15} className="text-gray-400 shrink-0" />
-                            <span className="text-gray-700 truncate flex-1">{att.fileName}</span>
-                            <Download size={13} className="text-gray-400 shrink-0" />
-                          </a>
+                            <a
+                              href={att.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 flex-1 min-w-0 mr-2"
+                              title="Xem tài liệu"
+                            >
+                              <FileText size={15} className="text-gray-400 shrink-0" />
+                              <span className="text-gray-700 truncate flex-1 hover:text-indigo-600 transition">{att.fileName}</span>
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (att.downloadUrl) {
+                                  window.location.href = att.downloadUrl;
+                                } else {
+                                  window.location.href = att.fileUrl;
+                                }
+                              }}
+                              className="p-1 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 rounded transition shrink-0"
+                              title="Tải về"
+                            >
+                              <Download size={13} />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -549,8 +593,8 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                 ) : (
                   <div className="space-y-4">
                     <div 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full flex flex-col items-center justify-center py-7 px-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition cursor-pointer"
+                      onClick={() => !isEnded && fileInputRef.current?.click()}
+                      className={`w-full flex flex-col items-center justify-center py-7 px-4 border-2 border-dashed rounded-xl transition ${isEnded ? 'bg-gray-100 border-gray-200 cursor-not-allowed' : 'border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 cursor-pointer'}`}
                     >
                       <UploadCloud size={22} className="text-gray-400 mb-2" />
                       <span className="text-sm font-medium text-gray-600">Chọn file nộp bài</span>
@@ -593,7 +637,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
 
                     <button
                       onClick={handleEssaySubmit}
-                      disabled={submitting || isOverdue || selectedFiles.length === 0}
+                      disabled={submitting || isOverdue || selectedFiles.length === 0 || isEnded}
                       className="w-full py-2.5 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition"
                     >
                       {submitting ? (

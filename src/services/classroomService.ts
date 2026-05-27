@@ -81,5 +81,12 @@ export const classroomService = {
   async getClassGrades(classId: string): Promise<any> {
     return await api.get(`/classes/${classId}/grades`);
   },
+
+  /**
+   * Cập nhật thông tin lớp học (Dành cho giáo viên)
+   */
+  async updateClass(classId: string, payload: Partial<Classroom>): Promise<any> {
+    return await api.put(`/classes/${classId}`, payload);
+  },
 };
 

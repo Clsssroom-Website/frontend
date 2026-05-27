@@ -25,26 +25,29 @@ export default function TeacherClassDetail() {
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [activeTab, setActiveTab] = useState("stream");
 
+  const fetchClassroom = async () => {
+    try {
+      const data: any = await classroomService.getClassDetail(classId!);
+      if (data.success) setClassroom(data.data);
+    } catch (error) {
+      console.error("Failed to fetch classroom:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchClassroom = async () => {
-      try {
-        const data: any = await classroomService.getClassDetail(classId!);
-        if (data.success) setClassroom(data.data);
-      } catch (error) {
-        console.error("Failed to fetch classroom:", error);
-      }
-    };
     if (classId) fetchClassroom();
   }, [classId]);
 
   if (!classroom) return <div className="p-8 text-center text-gray-500">Đang tải lớp học...</div>;
 
+  const isEnded = classroom.status === "ENDED";
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "stream": return <StreamTab classId={classId!} role="teacher" />;
-      case "people": return <TeacherPeopleTab classId={classId!} />;
-      case "classwork": return <TeacherAssignmentsTab classId={classId!} />;
-      case "documents": return <TeacherDocumentsTab classId={classId!} />;
+      case "people": return <TeacherPeopleTab classId={classId!} isEnded={isEnded} />;
+      case "classwork": return <TeacherAssignmentsTab classId={classId!} isEnded={isEnded} />;
+      case "documents": return <TeacherDocumentsTab classId={classId!} role="teacher" isEnded={isEnded} />;
       case "grades": return <TeacherGradesTab classId={classId!} />;
       default: return null;
     }
@@ -57,6 +60,7 @@ export default function TeacherClassDetail() {
       tabs={TEACHER_TABS}
       activeTab={activeTab}
       onTabChange={setActiveTab}
+      onRefresh={fetchClassroom}
     >
       {renderTabContent()}
     </ClassDetailLayout>

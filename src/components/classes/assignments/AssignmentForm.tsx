@@ -34,6 +34,7 @@ function makeDefaultQuestion(sortOrder: number): QuizQuestionDraft {
 export default function AssignmentForm({ classId, editTarget, onSaved, onCancel }: AssignmentFormProps) {
   const isEdit = !!editTarget;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasSubmissions = isEdit && !!editTarget?.totalSubmissions && editTarget.totalSubmissions > 0;
 
   const [title, setTitle] = useState(editTarget?.title ?? "");
   const [typeAssignment, setTypeAssignment] = useState(editTarget?.typeAssignment ?? "ESSAY");
@@ -215,7 +216,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
 
       // Chuyển QuizQuestionDraft[] → QuizQuestionInput[] cho backend
       const questionsPayload =
-        typeAssignment === "MULTIPLE_CHOICE"
+        typeAssignment === "MULTIPLE_CHOICE" && !hasSubmissions
           ? quizQuestions.map((q, idx) => ({
               questionText: q.questionText.trim(),
               points: q.points,
@@ -307,19 +308,20 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                 ].map((opt) => (
                   <label
                     key={opt.value}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition text-sm font-medium flex-1 justify-center ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition text-sm font-medium flex-1 justify-center ${
                       typeAssignment === opt.value
-                        ? "border-gray-800 bg-gray-50 text-gray-800"
+                        ? "border-gray-800 bg-gray-50 text-gray-800 font-semibold"
                         : "border-gray-300 text-gray-500 hover:border-gray-400"
-                    }`}
+                    } ${isEdit ? "opacity-60 cursor-not-allowed bg-gray-50/50" : "cursor-pointer"}`}
                   >
                     <input
                       type="radio"
                       name="typeAssignment"
                       value={opt.value}
                       checked={typeAssignment === opt.value}
-                      onChange={() => setTypeAssignment(opt.value)}
-                      className="accent-gray-700"
+                      onChange={() => !isEdit && setTypeAssignment(opt.value)}
+                      disabled={isEdit}
+                      className="accent-gray-700 disabled:opacity-50"
                     />
                     {opt.label}
                   </label>
@@ -361,31 +363,45 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
           {/* Quiz builder hoặc File upload */}
           {typeAssignment === "MULTIPLE_CHOICE" ? (
             <div className="space-y-4">
+              {hasSubmissions && (
+                <div className="flex items-start gap-2.5 px-4 py-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl">
+                  <AlertCircle size={16} className="shrink-0 text-amber-600 mt-0.5" />
+                  <div>
+                    <p className="font-bold">Không thể chỉnh sửa câu hỏi và đáp án</p>
+                    <p className="mt-0.5">Bài tập trắc nghiệm này đã có học sinh nộp bài. Bạn chỉ có thể chỉnh sửa tiêu đề, mô tả và hạn nộp.</p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
                 <label className="block text-sm font-bold text-gray-800">
                   Câu hỏi trắc nghiệm
                 </label>
-                <button
-                  type="button"
-                  onClick={addQuestion}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm"
-                >
-                  <Plus size={14} />
-                  Thêm câu hỏi
-                </button>
+                {!hasSubmissions && (
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm"
+                  >
+                    <Plus size={14} />
+                    Thêm câu hỏi
+                  </button>
+                )}
               </div>
 
               {quizQuestions.length === 0 ? (
                 <div className="text-center py-10 border-2 border-dashed border-indigo-100 rounded-xl bg-indigo-50/10 flex flex-col items-center gap-3">
                   <span className="text-sm text-indigo-400 font-medium">Chưa có câu hỏi. Nhấn nút bên trên để thêm câu hỏi đầu tiên.</span>
-                  <button
-                    type="button"
-                    onClick={addQuestion}
-                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-indigo-700 border border-indigo-200 bg-indigo-50/50 rounded-lg hover:bg-indigo-50 transition"
-                  >
-                    <Plus size={16} />
-                    Tạo câu hỏi
-                  </button>
+                  {!hasSubmissions && (
+                    <button
+                      type="button"
+                      onClick={addQuestion}
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-indigo-700 border border-indigo-200 bg-indigo-50/50 rounded-lg hover:bg-indigo-50 transition"
+                    >
+                      <Plus size={16} />
+                      Tạo câu hỏi
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-5">
@@ -411,18 +427,21 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                               min={0.25}
                               step={0.25}
                               value={q.points}
+                              disabled={hasSubmissions}
                               onChange={(e) => updateQuestion(q._tempId, { points: parseFloat(e.target.value) || 1 })}
-                              className="w-16 px-2 py-1 text-center text-xs border border-indigo-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white font-semibold text-indigo-700"
+                              className="w-16 px-2 py-1 text-center text-xs border border-indigo-200 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white font-semibold text-indigo-700 disabled:bg-gray-50 disabled:text-indigo-400 disabled:border-indigo-100 disabled:cursor-not-allowed"
                             />
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeQuestion(q._tempId)}
-                            className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"
-                            title="Xóa câu hỏi"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          {!hasSubmissions && (
+                            <button
+                              type="button"
+                              onClick={() => removeQuestion(q._tempId)}
+                              className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 transition"
+                              title="Xóa câu hỏi"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -430,9 +449,10 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                       <input
                         type="text"
                         value={q.questionText}
+                        disabled={hasSubmissions}
                         onChange={(e) => updateQuestion(q._tempId, { questionText: e.target.value })}
                         placeholder="Nhập nội dung câu hỏi..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed"
                       />
 
                       {/* Các phương án */}
@@ -446,9 +466,9 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                             <button
                               type="button"
                               onClick={() => setCorrectOption(q._tempId, opt._tempId)}
-                              disabled={!opt.optionText.trim()}
-                              title={opt.optionText.trim() ? "Đánh dấu là đáp án đúng" : "Nhập nội dung trước"}
-                              className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                              disabled={hasSubmissions || !opt.optionText.trim()}
+                              title={hasSubmissions ? "Không thể thay đổi đáp án đúng" : (opt.optionText.trim() ? "Đánh dấu là đáp án đúng" : "Nhập nội dung trước")}
+                              className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition disabled:opacity-50 disabled:cursor-not-allowed"
                               style={{
                                 borderColor: opt.isCorrect ? "#16a34a" : "#d1d5db",
                                 backgroundColor: opt.isCorrect ? "#16a34a" : "white",
@@ -463,9 +483,10 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                             <input
                               type="text"
                               value={opt.optionText}
+                              disabled={hasSubmissions}
                               onChange={(e) => updateOption(q._tempId, opt._tempId, { optionText: e.target.value })}
                               placeholder={`Phương án ${oIdx + 1}`}
-                              className={`flex-1 px-3 py-1.5 border text-xs rounded-lg focus:outline-none focus:ring-1 bg-white transition ${
+                              className={`flex-1 px-3 py-1.5 border text-xs rounded-lg focus:outline-none focus:ring-1 bg-white transition disabled:bg-gray-50 disabled:text-gray-550 disabled:cursor-not-allowed ${
                                 opt.isCorrect
                                   ? "border-green-600 bg-green-50/10 ring-1 ring-green-500/20 font-medium"
                                   : "border-gray-300"
@@ -480,7 +501,7 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                             )}
 
                             {/* Xóa phương án */}
-                            {q.options.length > 2 && (
+                            {q.options.length > 2 && !hasSubmissions && (
                               <button
                                 type="button"
                                 onClick={() => removeOption(q._tempId, opt._tempId)}
@@ -493,14 +514,16 @@ export default function AssignmentForm({ classId, editTarget, onSaved, onCancel 
                           </div>
                         ))}
 
-                        <button
-                          type="button"
-                          onClick={() => addOption(q._tempId)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-indigo-600 font-semibold hover:bg-indigo-50/50 rounded-md transition border border-indigo-200 mt-1"
-                        >
-                          <Plus size={12} />
-                          Thêm phương án
-                        </button>
+                        {!hasSubmissions && (
+                          <button
+                            type="button"
+                            onClick={() => addOption(q._tempId)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-indigo-600 font-semibold hover:bg-indigo-50/50 rounded-md transition border border-indigo-200 mt-1"
+                          >
+                            <Plus size={12} />
+                            Thêm phương án
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

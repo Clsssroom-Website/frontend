@@ -52,6 +52,8 @@ export default function StudentClassDetail() {
 
   if (!classroom) return <div className="p-8 text-center text-gray-500">Đang tải lớp học...</div>;
 
+  const isEnded = classroom.status === "ENDED";
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "stream": return <StreamTab classId={classId!} role="student" />;
@@ -60,9 +62,10 @@ export default function StudentClassDetail() {
           <StudentAssignmentsTab 
             classId={classId!} 
             initialAssignmentId={(location.state as any)?.assignmentId}
+            isEnded={isEnded}
           />
         );
-      case "documents": return <StudentDocumentsTab classId={classId!} role="student" />;
+      case "documents": return <StudentDocumentsTab classId={classId!} role="student" isEnded={isEnded} />;
       case "grades": return <StudentGradesTab classId={classId!} />;
       default: return null;
     }

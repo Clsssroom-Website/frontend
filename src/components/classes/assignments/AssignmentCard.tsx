@@ -11,6 +11,7 @@ interface AssignmentCardProps {
   assignment: Assignment;
   onEdit: (assignment: Assignment) => void;
   onDelete: (id: string) => void;
+  isEnded?: boolean;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -18,7 +19,7 @@ const TYPE_LABELS: Record<string, string> = {
   MULTIPLE_CHOICE: "Trắc nghiệm",
 };
 
-export default function AssignmentCard({ assignment, onEdit, onDelete }: AssignmentCardProps) {
+export default function AssignmentCard({ assignment, onEdit, onDelete, isEnded = false }: AssignmentCardProps) {
   const overdue = isOverdue(assignment.deadline);
   const [deleting, setDeleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -26,6 +27,10 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleDeleteTrigger = () => {
+    if (assignment.totalSubmissions !== undefined && assignment.totalSubmissions > 0) {
+      toast.error("Không thể xóa bài tập đã có học sinh làm bài.");
+      return;
+    }
     setConfirmOpen(true);
   };
 
@@ -122,26 +127,28 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={() => onEdit(assignment)}
-            title="Chỉnh sửa"
-            className="p-2 rounded-full text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 transition"
-          >
-            <Pencil size={16} />
-          </button>
-          <button
-            onClick={handleDeleteTrigger}
-            disabled={deleting}
-            title="Xóa bài tập"
-            className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition"
-          >
-            {deleting
-              ? <span className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin block" />
-              : <Trash2 size={16} />
-            }
-          </button>
-        </div>
+        {!isEnded && (
+          <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => onEdit(assignment)}
+              title="Chỉnh sửa"
+              className="p-2 rounded-full text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 transition"
+            >
+              <Pencil size={16} />
+            </button>
+            <button
+              onClick={handleDeleteTrigger}
+              disabled={deleting}
+              title="Xóa bài tập"
+              className="p-2 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition"
+            >
+              {deleting
+                ? <span className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin block" />
+                : <Trash2 size={16} />
+              }
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Expanded detail */}
@@ -151,23 +158,6 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
             <div>
               <p className="text-xs font-medium text-gray-500 mb-1">Hướng dẫn</p>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{assignment.description}</p>
-            </div>
-          )}
-
-          {assignment.typeAssignment === "MULTIPLE_CHOICE" && assignment.quizUrl && (
-            <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider">Đường dẫn Google Forms</p>
-              <div className="flex items-center justify-between">
-                <a
-                  href={assignment.quizUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-purple-600 hover:text-purple-800 break-all underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {assignment.quizUrl}
-                </a>
-              </div>
             </div>
           )}
 
@@ -236,6 +226,7 @@ export default function AssignmentCard({ assignment, onEdit, onDelete }: Assignm
           classId={assignment.classId}
           assignment={assignment}
           onClose={() => setIsSubmissionsOpen(false)}
+          isEnded={isEnded}
         />
       )}
 

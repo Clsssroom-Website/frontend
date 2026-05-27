@@ -9,6 +9,7 @@ interface SubmissionsModalProps {
   classId: string;
   assignment: Assignment;
   onClose: () => void;
+  isEnded?: boolean;
 }
 
 const formatDate = (dateString?: string) => {
@@ -23,7 +24,7 @@ const formatFileSize = (bytes?: string | number | null) => {
   return (Number(bytes) / (1024 * 1024)).toFixed(2) + " MB";
 };
 
-export default function SubmissionsModal({ isOpen, classId, assignment, onClose }: SubmissionsModalProps) {
+export default function SubmissionsModal({ isOpen, classId, assignment, onClose, isEnded = false }: SubmissionsModalProps) {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -212,15 +213,17 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose 
                         {editingSubmissionId === sub.submissionId ? null : sub.grade ? (
                           <div className="text-right">
                             <div className="text-lg font-bold text-gray-800">{sub.grade.score}<span className="text-xs text-gray-400">/10</span></div>
-                            <button
-                              onClick={() => startEditing(sub)}
-                              className="text-[10px] text-gray-500 hover:text-gray-700 underline mt-0.5"
-                            >
-                              Sửa điểm
-                            </button>
+                            {!isEnded && (
+                              <button
+                                onClick={() => startEditing(sub)}
+                                className="text-[10px] text-gray-500 hover:text-gray-700 underline mt-0.5"
+                              >
+                                Sửa điểm
+                              </button>
+                            )}
                           </div>
                         ) : (
-                          !isQuiz && (
+                          !isQuiz && !isEnded && (
                             <button
                               onClick={() => startEditing(sub)}
                               className="px-3 py-1.5 text-xs font-semibold text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition"

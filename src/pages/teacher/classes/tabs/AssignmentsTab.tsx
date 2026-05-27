@@ -7,9 +7,10 @@ import AssignmentForm from "../../../../components/classes/assignments/Assignmen
 
 interface AssignmentsTabProps {
   classId: string;
+  isEnded?: boolean;
 }
 
-export default function TeacherAssignmentsTab({ classId }: AssignmentsTabProps) {
+export default function TeacherAssignmentsTab({ classId, isEnded = false }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,13 @@ export default function TeacherAssignmentsTab({ classId }: AssignmentsTabProps) 
   const handleSaved = (saved: Assignment) => {
     setAssignments((prev) => {
       const exists = prev.find((a) => a.assignmentId === saved.assignmentId);
-      if (exists) return prev.map((a) => (a.assignmentId === saved.assignmentId ? saved : a));
+      if (exists) {
+        return prev.map((a) =>
+          a.assignmentId === saved.assignmentId
+            ? { ...saved, totalSubmissions: saved.totalSubmissions ?? a.totalSubmissions }
+            : a
+        );
+      }
       return [saved, ...prev];
     });
     setFormTarget(null);
@@ -62,13 +69,15 @@ export default function TeacherAssignmentsTab({ classId }: AssignmentsTabProps) 
             <span className="ml-2 text-sm font-normal text-gray-400">({assignments.length})</span>
           )}
         </h2>
-        <button
-          onClick={() => setFormTarget(undefined)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
-        >
-          <Plus size={16} />
-          Tạo bài tập
-        </button>
+        {!isEnded && (
+          <button
+            onClick={() => setFormTarget(undefined)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
+          >
+            <Plus size={16} />
+            Tạo bài tập
+          </button>
+        )}
       </div>
 
       {/* Form tạo / chỉnh sửa (Modal overlay) */}
@@ -95,13 +104,15 @@ export default function TeacherAssignmentsTab({ classId }: AssignmentsTabProps) 
           <FileText size={48} className="text-gray-300" />
           <p className="text-lg font-medium">Chưa có bài tập nào</p>
           <p className="text-sm">Bấm "Tạo bài tập" để bắt đầu giao bài cho lớp.</p>
-          <button
-            onClick={() => setFormTarget(undefined)}
-            className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
-          >
-            <Plus size={16} />
-            Tạo bài tập đầu tiên
-          </button>
+          {!isEnded && (
+            <button
+              onClick={() => setFormTarget(undefined)}
+              className="mt-2 flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
+            >
+              <Plus size={16} />
+              Tạo bài tập đầu tiên
+            </button>
+          )}
         </div>
       )}
 
@@ -114,6 +125,7 @@ export default function TeacherAssignmentsTab({ classId }: AssignmentsTabProps) 
               assignment={a}
               onEdit={(asgn) => setFormTarget(asgn)}
               onDelete={handleDeleted}
+              isEnded={isEnded}
             />
           ))}
         </div>

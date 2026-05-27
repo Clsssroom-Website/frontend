@@ -1,7 +1,9 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { Settings, Share2, MoreVertical, Copy } from "lucide-react";
 import type { Classroom } from "../../types/classroom";
 import toast from "react-hot-toast";
+import ClassSettingsModal from "./ClassSettingsModal";
 
 interface TabConfig {
   id: string;
@@ -16,6 +18,7 @@ interface ClassDetailLayoutProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   children: ReactNode;
+  onRefresh?: () => void;
 }
 
 export default function ClassDetailLayout({
@@ -25,7 +28,10 @@ export default function ClassDetailLayout({
   activeTab,
   onTabChange,
   children,
+  onRefresh,
 }: ClassDetailLayoutProps) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white">
       {/* HEADER BANNER */}
@@ -40,11 +46,23 @@ export default function ClassDetailLayout({
               <p className="text-gray-200 text-lg">{classroom.topic || classroom.description}</p>
             </div>
             <div className="flex gap-3 mb-2">
-              <button className="p-2 hover:bg-white/20 rounded-full transition">
+              <button 
+                onClick={() => {
+                  const inviteLink = `${window.location.origin}/student/join?code=${classroom.joinCode}`;
+                  navigator.clipboard.writeText(inviteLink);
+                  toast.success("Đã sao chép link tham gia lớp học!");
+                }}
+                className="p-2 hover:bg-white/20 rounded-full transition"
+                title="Sao chép link mời"
+              >
                 <Share2 size={20} />
               </button>
               {role === "teacher" && (
-                <button className="p-2 hover:bg-white/20 rounded-full transition">
+                <button 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-2 hover:bg-white/20 rounded-full transition"
+                  title="Cài đặt lớp học"
+                >
                   <Settings size={20} />
                 </button>
               )}
@@ -52,6 +70,21 @@ export default function ClassDetailLayout({
           </div>
         </div>
       </div>
+
+      {/* WARNING BANNER FOR ENDED CLASS */}
+      {classroom.status === "ENDED" && (
+        <div className="max-w-6xl mx-auto px-4 mt-4 animate-fade-in">
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm">
+            <span className="shrink-0 text-xl">⚠️</span>
+            <div>
+              <p className="font-semibold text-sm">Lớp học này đã kết thúc</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Bạn chỉ có quyền xem nội dung lớp học. Mọi hoạt động chỉnh sửa, nộp bài, thảo luận hoặc chấm điểm đều bị khóa.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TABS NAVIGATION */}
       <div className="max-w-6xl mx-auto px-4 mt-4 border-b border-gray-200">
@@ -115,6 +148,17 @@ export default function ClassDetailLayout({
           {children}
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <ClassSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        classroom={classroom}
+        onSuccess={() => {
+          setIsSettingsOpen(false);
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 }

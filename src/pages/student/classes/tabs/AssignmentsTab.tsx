@@ -7,9 +7,10 @@ import AssignmentDetailView from "./AssignmentDetailView";
 interface AssignmentsTabProps {
   classId: string;
   initialAssignmentId?: string;
+  isEnded?: boolean;
 }
 
-export default function StudentAssignmentsTab({ classId, initialAssignmentId }: AssignmentsTabProps) {
+export default function StudentAssignmentsTab({ classId, initialAssignmentId, isEnded = false }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,7 @@ export default function StudentAssignmentsTab({ classId, initialAssignmentId }: 
       <AssignmentDetailView
         assignment={selectedAssignment}
         onBack={() => setSelectedAssignment(null)}
+        isEnded={isEnded}
       />
     );
   }

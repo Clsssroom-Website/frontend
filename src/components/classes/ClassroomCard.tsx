@@ -22,8 +22,8 @@ export function ClassroomCard({ cls, linkTo, actions }: ClassroomCardProps) {
             </Link>
             <p className="text-gray-500 text-sm line-clamp-1">{cls.description || "No description"}</p>
           </div>
-          <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${cls.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-            {cls.status === "ACTIVE" ? "available" : "end"}
+          <span className={`text-xs px-2 py-1 font-medium rounded-full border whitespace-nowrap ${cls.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}>
+            {cls.status === "ACTIVE" ? "Đang hoạt động" : "Đã kết thúc"}
           </span>
         </div>
 

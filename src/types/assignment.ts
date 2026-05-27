@@ -96,6 +96,7 @@ export interface Assignment {
   totalSubmissions?: number;
   AssignmentAttachments: Attachment[];
   QuizQuestions?: QuizQuestionDB[];
+  quizUrl?: string;
 }
 
 // ─── Submission ───────────────────────────────────────────────────────────────

@@ -173,9 +173,10 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
 interface DocumentsTabProps {
   classId: string;
   role?: "teacher" | "student";
+  isEnded?: boolean;
 }
 
-export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTabProps) {
+export default function DocumentsTab({ classId, role = "teacher", isEnded = false }: DocumentsTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
@@ -237,7 +238,7 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-800">Tài liệu bài giảng</h2>
-        {isTeacher && (
+        {isTeacher && !isEnded && (
           <button 
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm hover:shadow-md cursor-pointer"
@@ -268,7 +269,7 @@ export default function DocumentsTab({ classId, role = "teacher" }: DocumentsTab
             <DocumentItem 
               key={doc.documentId} 
               doc={doc} 
-              isTeacher={isTeacher}
+              isTeacher={isTeacher && !isEnded}
               onEdit={handleEdit}
               onDelete={handleDeleteTrigger}
             />
