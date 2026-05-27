@@ -1,10 +1,22 @@
 import api from "../config/axiosClient";
-import type { Assignment, Submission } from "../types/assignment";
+import type { Assignment, Submission, StudentAnswerPayload } from "../types/assignment";
 
 interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data: T;
+}
+
+export interface QuizOptionInput {
+  optionText: string;
+  isCorrect: boolean;
+}
+
+export interface QuizQuestionInput {
+  questionText: string;
+  points: number;
+  sortOrder: number;
+  options: QuizOptionInput[];
 }
 
 export const assignmentService = {
@@ -24,7 +36,20 @@ export const assignmentService = {
   },
 
   /**
-   * Tạo bài tập mới — gửi FormData kèm file trực tiếp lên MinIO qua backend
+   * Lấy chi tiết bài tập — bao gồm quiz questions (học sinh, không có isCorrect)
+   */
+  getAssignmentDetail: async (
+    assignmentId: string
+  ): Promise<ApiResponse<Assignment>> => {
+    const response = await api.get<ApiResponse<Assignment>>(
+      `/students/assignments/${assignmentId}`
+    );
+    return response as unknown as ApiResponse<Assignment>;
+  },
+
+  /**
+   * Tạo bài tập mới — gửi FormData kèm file trực tiếp lên MinIO qua backend.
+   * Với MULTIPLE_CHOICE: truyền questions[] thay vì quizData JSON string.
    */
   createAssignment: async (
     classId: string,
@@ -33,8 +58,7 @@ export const assignmentService = {
       description?: string;
       deadline: string;
       typeAssignment?: string;
-      quizUrl?: string;
-      quizData?: string;
+      questions?: QuizQuestionInput[];
       files?: File[];
     }
   ): Promise<ApiResponse<Assignment>> => {
@@ -43,8 +67,11 @@ export const assignmentService = {
     if (payload.description) formData.append("description", payload.description);
     formData.append("deadline", payload.deadline);
     if (payload.typeAssignment) formData.append("typeAssignment", payload.typeAssignment);
-    if (payload.quizUrl) formData.append("quizUrl", payload.quizUrl);
-    if (payload.quizData) formData.append("quizData", payload.quizData);
+
+    // Gửi questions dưới dạng JSON string
+    if (payload.questions && payload.questions.length > 0) {
+      formData.append("questions", JSON.stringify(payload.questions));
+    }
 
     (payload.files ?? []).forEach((file) => {
       formData.append("attachments", file);
@@ -69,10 +96,9 @@ export const assignmentService = {
       description?: string;
       deadline?: string;
       typeAssignment?: string;
-      quizUrl?: string;
-      quizData?: string;
-      keepAttachmentIds?: string[]; // IDs của attachments cũ muốn giữ
-      files?: File[];               // Files mới upload
+      questions?: QuizQuestionInput[];
+      keepAttachmentIds?: string[];
+      files?: File[];
     }
   ): Promise<ApiResponse<Assignment>> => {
     const formData = new FormData();
@@ -81,8 +107,11 @@ export const assignmentService = {
     if (payload.deadline !== undefined) formData.append("deadline", payload.deadline);
     if (payload.typeAssignment !== undefined)
       formData.append("typeAssignment", payload.typeAssignment);
-    if (payload.quizUrl !== undefined) formData.append("quizUrl", payload.quizUrl);
-    if (payload.quizData !== undefined) formData.append("quizData", payload.quizData);
+
+    // Gửi questions mới
+    if (payload.questions !== undefined) {
+      formData.append("questions", JSON.stringify(payload.questions));
+    }
 
     // Gửi danh sách attachmentIds muốn giữ lại dưới dạng JSON
     if (payload.keepAttachmentIds !== undefined) {
@@ -129,7 +158,7 @@ export const assignmentService = {
   },
 
   /**
-   * Nộp bài tập (Dành cho học sinh)
+   * Nộp bài tập tự luận (Dành cho học sinh)
    */
   submitAssignment: async (
     assignmentId: string,
@@ -149,19 +178,19 @@ export const assignmentService = {
   },
 
   /**
-   * Nộp bài trắc nghiệm và tự động chấm điểm
+   * Nộp bài trắc nghiệm — chấm điểm tự động phía server
+   * Body: { answers: [{ questionId, selectedOptionId }] }
    */
   submitQuizAssignment: async (
     assignmentId: string,
-    answers: { questionId: string; selectedAnswer: string }[]
+    answers: StudentAnswerPayload[]
   ): Promise<ApiResponse<Submission>> => {
     const response = await api.post<ApiResponse<Submission>>(
       `/students/assignments/${assignmentId}/submit-quiz`,
-      { quizAnswers: JSON.stringify(answers) }
+      { answers }
     );
     return response as unknown as ApiResponse<Submission>;
   },
-
 
   /**
    * Xem bài nộp và điểm (Dành cho học sinh)

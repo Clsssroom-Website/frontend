@@ -90,7 +90,7 @@ export default function ClassDetailLayout({
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(classroom.joinCode);
-                      alert("Đã copy mã!");
+                      toast.success("Đã sao chép mã lớp học thành công!");
                     }}
                     className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition"
                   >

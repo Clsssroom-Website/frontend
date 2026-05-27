@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { assignmentService } from "../../../../services/assignmentService";
 import type { Assignment } from "../../../../types/assignment";
-import { FileText, Clock, Upload, AlertCircle } from "lucide-react";
+import { FileText, Clock, AlertCircle } from "lucide-react";
 import AssignmentDetailView from "./AssignmentDetailView";
 
 interface AssignmentsTabProps {
@@ -15,7 +15,6 @@ export default function StudentAssignmentsTab({ classId, initialAssignmentId }: 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Keep a ref of the initialAssignmentId so it doesn't change when prop changes
   const initialId = useRef(initialAssignmentId);
 
   useEffect(() => {
@@ -26,16 +25,13 @@ export default function StudentAssignmentsTab({ classId, initialAssignmentId }: 
           setAssignments(data.data);
           if (initialId.current) {
             const found = data.data.find((a: Assignment) => a.assignmentId === initialId.current);
-            if (found) {
-              setSelectedAssignment(found);
-            }
+            if (found) setSelectedAssignment(found);
           }
         } else {
           setError(data?.message || "Không thể tải danh sách bài tập.");
         }
       } catch (err: unknown) {
-        const error = err as { message?: string };
-        setError(error.message || "Lỗi kết nối. Vui lòng thử lại.");
+        setError((err as { message?: string }).message || "Lỗi kết nối. Vui lòng thử lại.");
       } finally {
         setLoading(false);
       }
@@ -43,67 +39,94 @@ export default function StudentAssignmentsTab({ classId, initialAssignmentId }: 
     fetchAssignments();
   }, [classId]);
 
-  if (loading) return <div className="text-center py-12 text-gray-400">Đang tải bài tập...</div>;
-  if (error) return (
-    <div className="flex flex-col items-center justify-center py-12 text-red-500 gap-2">
-      <AlertCircle size={32} />
-      <p>{error}</p>
-    </div>
-  );
+  if (loading)
+    return <div className="text-center py-12 text-gray-400 text-sm">Đang tải bài tập...</div>;
+
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-gray-500 gap-2">
+        <AlertCircle size={28} className="text-gray-300" />
+        <p className="text-sm">{error}</p>
+      </div>
+    );
 
   if (selectedAssignment) {
     return (
-      <AssignmentDetailView 
-        assignment={selectedAssignment} 
-        onBack={() => setSelectedAssignment(null)} 
+      <AssignmentDetailView
+        assignment={selectedAssignment}
+        onBack={() => setSelectedAssignment(null)}
       />
     );
   }
 
-  if (assignments.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
-      <FileText size={48} className="text-gray-300" />
-      <p className="text-lg font-medium">Chưa có bài tập nào</p>
-      <p className="text-sm">Giáo viên chưa giao bài tập cho lớp này.</p>
-    </div>
-  );
+  if (assignments.length === 0)
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+        <FileText size={40} className="text-gray-300" />
+        <p className="text-base font-medium text-gray-600">Chưa có bài tập nào</p>
+        <p className="text-sm">Giáo viên chưa giao bài tập cho lớp này.</p>
+      </div>
+    );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {assignments.map((assignment) => {
         const isOverdue = new Date(assignment.deadline) < new Date();
+        const isQuiz = assignment.typeAssignment === "MULTIPLE_CHOICE";
+
         return (
-          <div 
-            key={assignment.assignmentId} 
+          <div
+            key={assignment.assignmentId}
             onClick={() => setSelectedAssignment(assignment)}
-            className="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-200 cursor-pointer transition"
+            className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm hover:shadow-md hover:border-gray-300 cursor-pointer transition"
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                  <FileText size={20} />
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
+                  <FileText size={18} />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 hover:text-indigo-600 transition-colors">{assignment.title}</h3>
-                  <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{assignment.description || "Không có mô tả"}</p>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-gray-800 text-sm leading-snug">{assignment.title}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                    {assignment.description || "Không có mô tả"}
+                  </p>
                 </div>
               </div>
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${isOverdue ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
-                {isOverdue ? "Quá hạn" : "Còn hạn"}
-              </span>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-xs px-2 py-0.5 border rounded font-medium ${
+                  isQuiz
+                    ? "border-purple-200 bg-purple-50 text-purple-700"
+                    : "border-blue-200 bg-blue-50 text-blue-700"
+                }`}>
+                  {isQuiz ? "Trắc nghiệm" : "Nộp tệp"}
+                </span>
+                <span className={`text-xs px-2 py-0.5 rounded border font-medium ${
+                  isOverdue
+                    ? "border-red-200 bg-red-50 text-red-600"
+                    : "border-green-200 bg-green-50 text-green-700"
+                }`}>
+                  {isOverdue ? "Quá hạn" : "Còn hạn"}
+                </span>
+              </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                <Clock size={15} />
-                <span>Hạn nộp: {new Date(assignment.deadline).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+            <div className="mt-3 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                <Clock size={13} />
+                <span>
+                  {new Date(assignment.deadline).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
               </div>
-              <button
-                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
-              >
-                <Upload size={15} />
-                Xem bài tập
-              </button>
+              <span className="text-xs text-gray-400 font-medium">
+                Nhấn để xem →
+              </span>
             </div>
           </div>
         );
