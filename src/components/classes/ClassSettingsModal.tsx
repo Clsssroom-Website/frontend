@@ -11,6 +11,20 @@ interface ClassSettingsModalProps {
   onSuccess: () => void;
 }
 
+interface FormErrors {
+  className?: string;
+  description?: string;
+  room?: string;
+  topic?: string;
+}
+
+const LIMITS = {
+  className: 100,
+  description: 500,
+  room: 50,
+  topic: 100,
+};
+
 export default function ClassSettingsModal({
   isOpen,
   onClose,
@@ -23,6 +37,7 @@ export default function ClassSettingsModal({
     room: "",
     topic: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
 
@@ -34,15 +49,49 @@ export default function ClassSettingsModal({
         room: classroom.room || "",
         topic: classroom.topic || "",
       });
+      setErrors({});
     }
   }, [classroom, isOpen]);
 
   if (!isOpen) return null;
 
+  const validate = (): FormErrors => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.className.trim()) {
+      newErrors.className = "Tên lớp không được để trống.";
+    } else if (formData.className.length > LIMITS.className) {
+      newErrors.className = `Tên lớp không được vượt quá ${LIMITS.className} ký tự.`;
+    }
+
+    if (formData.description.length > LIMITS.description) {
+      newErrors.description = `Mô tả không được vượt quá ${LIMITS.description} ký tự.`;
+    }
+
+    if (formData.room.length > LIMITS.room) {
+      newErrors.room = `Tên phòng không được vượt quá ${LIMITS.room} ký tự.`;
+    }
+
+    if (formData.topic.length > LIMITS.topic) {
+      newErrors.topic = `Chủ đề không được vượt quá ${LIMITS.topic} ký tự.`;
+    }
+
+    return newErrors;
+  };
+
+  const handleChange = (field: keyof typeof formData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: undefined });
+    }
+  };
+
   const handleUpdateDetails = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.className.trim()) {
-      toast.error("Tên lớp học không được để trống.");
+
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
@@ -100,6 +149,7 @@ export default function ClassSettingsModal({
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-800">Cài đặt lớp học</h2>
           <button
+            title="Đóng"
             onClick={onClose}
             className="p-1 hover:bg-gray-200 rounded-full text-gray-500 transition-colors"
           >
@@ -142,31 +192,71 @@ export default function ClassSettingsModal({
 
           {/* Edit details form */}
           <form onSubmit={handleUpdateDetails} className="space-y-4">
+            {/* Class Name */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-gray-700">Tên lớp học *</label>
               <input
-                required
                 type="text"
                 disabled={isClassEnded}
                 value={formData.className}
-                onChange={(e) => setFormData({ ...formData, className: e.target.value })}
-                className="w-full px-3 py-2 border text-sm text-gray-800 border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow disabled:bg-gray-100 disabled:text-gray-400"
-                placeholder="e.g. Quản lý dự án"
+                onChange={(e) => handleChange("className", e.target.value)}
+                maxLength={LIMITS.className + 10}
+                className={`w-full px-3 py-2 border text-sm text-gray-800 rounded-md outline-none focus:ring-2 transition-shadow disabled:bg-gray-100 disabled:text-gray-400 ${
+                  errors.className
+                    ? "border-red-400 focus:ring-red-300"
+                    : "border-gray-300 focus:ring-indigo-500"
+                }`}
+                placeholder="VD: Công nghệ phần mềm"
               />
+              <div className="flex justify-between items-center">
+                {errors.className ? (
+                  <p className="text-xs text-red-500">{errors.className}</p>
+                ) : (
+                  <span />
+                )}
+                <span
+                  className={`text-xs ml-auto ${
+                    formData.className.length > LIMITS.className ? "text-red-500" : "text-gray-400"
+                  }`}
+                >
+                  {formData.className.length}/{LIMITS.className}
+                </span>
+              </div>
             </div>
 
+            {/* Description */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-gray-700">Mô tả lớp học</label>
               <textarea
                 disabled={isClassEnded}
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border text-sm text-gray-800 border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow resize-none disabled:bg-gray-100 disabled:text-gray-400"
+                onChange={(e) => handleChange("description", e.target.value)}
+                maxLength={LIMITS.description + 10}
+                className={`w-full px-3 py-2 border text-sm text-gray-800 rounded-md outline-none focus:ring-2 transition-shadow resize-none disabled:bg-gray-100 disabled:text-gray-400 ${
+                  errors.description
+                    ? "border-red-400 focus:ring-red-300"
+                    : "border-gray-300 focus:ring-indigo-500"
+                }`}
                 placeholder="Mô tả lớp học..."
                 rows={2}
               />
+              <div className="flex justify-between items-center">
+                {errors.description ? (
+                  <p className="text-xs text-red-500">{errors.description}</p>
+                ) : (
+                  <span />
+                )}
+                <span
+                  className={`text-xs ml-auto ${
+                    formData.description.length > LIMITS.description ? "text-red-500" : "text-gray-400"
+                  }`}
+                >
+                  {formData.description.length}/{LIMITS.description}
+                </span>
+              </div>
             </div>
 
+            {/* Room & Topic */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-gray-700">Phòng học</label>
@@ -174,21 +264,48 @@ export default function ClassSettingsModal({
                   type="text"
                   disabled={isClassEnded}
                   value={formData.room}
-                  onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                  className="w-full px-3 py-2 border text-sm text-gray-800 border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow disabled:bg-gray-100 disabled:text-gray-400"
-                  placeholder="e.g. 2D11"
+                  onChange={(e) => handleChange("room", e.target.value)}
+                  maxLength={LIMITS.room + 5}
+                  className={`w-full px-3 py-2 border text-sm text-gray-800 rounded-md outline-none focus:ring-2 transition-shadow disabled:bg-gray-100 disabled:text-gray-400 ${
+                    errors.room
+                      ? "border-red-400 focus:ring-red-300"
+                      : "border-gray-300 focus:ring-indigo-500"
+                  }`}
+                  placeholder="VD: A102"
                 />
+                {errors.room && <p className="text-xs text-red-500">{errors.room}</p>}
+                <span
+                  className={`text-xs ${
+                    formData.room.length > LIMITS.room ? "text-red-500" : "text-gray-400"
+                  }`}
+                >
+                  {formData.room.length}/{LIMITS.room}
+                </span>
               </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-gray-700">Chủ đề</label>
                 <input
                   type="text"
                   disabled={isClassEnded}
                   value={formData.topic}
-                  onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                  className="w-full px-3 py-2 border text-sm text-gray-800 border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow disabled:bg-gray-100 disabled:text-gray-400"
-                  placeholder="e.g. HK1-2025"
+                  onChange={(e) => handleChange("topic", e.target.value)}
+                  maxLength={LIMITS.topic + 10}
+                  className={`w-full px-3 py-2 border text-sm text-gray-800 rounded-md outline-none focus:ring-2 transition-shadow disabled:bg-gray-100 disabled:text-gray-400 ${
+                    errors.topic
+                      ? "border-red-400 focus:ring-red-300"
+                      : "border-gray-300 focus:ring-indigo-500"
+                  }`}
+                  placeholder="VD: HK2-2026"
                 />
+                {errors.topic && <p className="text-xs text-red-500">{errors.topic}</p>}
+                <span
+                  className={`text-xs ${
+                    formData.topic.length > LIMITS.topic ? "text-red-500" : "text-gray-400"
+                  }`}
+                >
+                  {formData.topic.length}/{LIMITS.topic}
+                </span>
               </div>
             </div>
 

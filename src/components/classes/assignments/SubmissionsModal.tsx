@@ -34,26 +34,37 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose,
   const [scoreInput, setScoreInput] = useState<string>("");
   const [commentInput, setCommentInput] = useState<string>("");
   const [savingGrade, setSavingGrade] = useState<boolean>(false);
+  const [scoreError, setScoreError] = useState<string>("");
 
-  // Expanded quiz answers
-  const [expandedQuizId, setExpandedQuizId] = useState<string | null>(null);
+  const COMMENT_MAX_LENGTH = 1000;
 
   const startEditing = (sub: Submission) => {
     setEditingSubmissionId(sub.submissionId);
     setScoreInput(sub.grade ? sub.grade.score?.toString() || "" : "");
     setCommentInput(sub.grade ? sub.grade.comment || "" : "");
+    setScoreError("");
   };
+
+  // Expanded quiz answers
+  const [expandedQuizId, setExpandedQuizId] = useState<string | null>(null);
 
   const handleSaveGrade = async (submissionId: string) => {
     const parsed = parseFloat(scoreInput);
     if (isNaN(parsed) || parsed < 0 || parsed > 10) {
-      toast.error("Điểm số phải từ 0 đến 10.");
+      setScoreError("Điểm số phải là số từ 0 đến 10.");
       return;
     }
+    if (commentInput.length > COMMENT_MAX_LENGTH) {
+      toast.error(`Nhận xét không được vượt quá ${COMMENT_MAX_LENGTH} ký tự.`);
+      return;
+    }
+    // Làm tròn 2 chữ số thập phân
+    const roundedScore = Math.round(parsed * 100) / 100;
+    setScoreError("");
     try {
       setSavingGrade(true);
       const res = await assignmentService.gradeSubmission(classId, assignment.assignmentId, submissionId, {
-        score: parsed,
+        score: roundedScore,
         comment: commentInput.trim(),
       });
       if (res.success) {
@@ -65,7 +76,7 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose,
               ...s,
               grade: {
                 gradeId: s.grade?.gradeId || "temp",
-                score: parsed,
+                score: roundedScore,
                 comment: commentInput.trim(),
                 gradedAt: new Date().toISOString(),
               },
@@ -248,10 +259,18 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose,
                               max="10"
                               step="0.1"
                               value={scoreInput}
-                              onChange={(e) => setScoreInput(e.target.value)}
+                              onChange={(e) => {
+                                setScoreInput(e.target.value);
+                                setScoreError("");
+                              }}
                               placeholder="8.5"
-                              className="w-full text-xs font-bold text-gray-800 bg-white border border-gray-300 rounded px-2.5 py-1.5 focus:outline-none focus:border-gray-500"
+                              className={`w-full text-xs font-bold text-gray-800 bg-white border rounded px-2.5 py-1.5 focus:outline-none ${
+                                scoreError ? "border-red-400 focus:border-red-500" : "border-gray-300 focus:border-gray-500"
+                              }`}
                             />
+                            {scoreError && (
+                              <p className="text-[10px] text-red-500 mt-0.5">{scoreError}</p>
+                            )}
                           </div>
                           <div className="flex-1">
                             <label className="block text-[10px] text-gray-500 mb-1">Nhận xét</label>
@@ -259,9 +278,17 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose,
                               type="text"
                               value={commentInput}
                               onChange={(e) => setCommentInput(e.target.value)}
+                              maxLength={COMMENT_MAX_LENGTH + 10}
                               placeholder="Nhận xét bài làm..."
-                              className="w-full text-xs text-gray-700 bg-white border border-gray-300 rounded px-2.5 py-1.5 focus:outline-none focus:border-gray-500"
+                              className={`w-full text-xs text-gray-700 bg-white border rounded px-2.5 py-1.5 focus:outline-none focus:border-gray-500 ${
+                                commentInput.length > COMMENT_MAX_LENGTH ? "border-red-400" : "border-gray-300"
+                              }`}
                             />
+                            <span className={`text-[10px] ${
+                              commentInput.length > COMMENT_MAX_LENGTH ? "text-red-500" : "text-gray-400"
+                            }`}>
+                              {commentInput.length}/{COMMENT_MAX_LENGTH}
+                            </span>
                           </div>
                         </div>
                         <div className="flex justify-end gap-2 text-xs">
