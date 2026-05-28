@@ -133,6 +133,34 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     await expect(card.locator("text=0 bài đã nộp")).toBeVisible();
   });
 
+  test("TC-ASSIGNMENT-001b: Tạo bài tập tự luận thứ hai để học sinh nộp bài", async ({ page }) => {
+    if (!createdClassName) {
+      throw new Error("createdClassName không được thiết lập ở bước trước!");
+    }
+
+    await page.goto(`${BASE_URL}/teacher/classes`);
+    const classCard = page.locator(`h3:has-text("${createdClassName}")`).first();
+    await classCard.click();
+    await page.waitForURL(/.*teacher\/classes\/.*/);
+
+    await page.locator("button:has-text('Bài tập')").click();
+    await page.locator("button:has-text('Tạo bài tập')").first().click();
+
+    await page.fill('input[id="assignmentTitleInput"]', "Bài tự luận nộp bài thành công E2E");
+    await page.fill('textarea[id="assignmentDescInput"]', "Nộp file PDF hợp lệ để kiểm tra tính năng nộp bài tự luận.");
+
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 2);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const deadlineVal = `${futureDate.getFullYear()}-${pad(futureDate.getMonth() + 1)}-${pad(futureDate.getDate())}T${pad(futureDate.getHours())}:${pad(futureDate.getMinutes())}`;
+    await page.fill('input[id="assignmentDeadlineInput"]', deadlineVal);
+
+    await page.click('button:has-text("Giao bài tập")');
+
+    const card = page.locator(".border-gray-200", { hasText: "Bài tự luận nộp bài thành công E2E" });
+    await expect(card).toBeVisible();
+  });
+
   test("TC-ASSIGNMENT-002: Tạo bài tập trắc nghiệm (MULTIPLE_CHOICE) thành công với câu hỏi và các phương án", async ({ page }) => {
     if (!createdClassName) {
       throw new Error("createdClassName không được thiết lập ở bước trước!");
@@ -444,6 +472,79 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
 
     // Xác nhận file không được hiển thị trong danh sách chuẩn bị nộp
     await expect(page.locator('span:has-text("too-large-submission.pdf")')).not.toBeVisible();
+
+    // Đóng modal chi tiết bài tập
+    await page.click('button[title="Đóng"]');
+
+    // --- Bổ sung: Học sinh nộp bài tự luận thành công ---
+    // Tìm bài tự luận nộp bài thành công
+    const essaySuccessCard = page.locator(".border-gray-200", { hasText: "Bài tự luận nộp bài thành công E2E" }).first();
+    await expect(essaySuccessCard).toBeVisible();
+    await essaySuccessCard.click();
+
+    // Chờ loading biến mất (Hướng dẫn hiển thị)
+    await expect(page.locator('h3:has-text("Hướng dẫn")')).toBeVisible();
+
+    // Chọn file nộp bài hợp lệ
+    await page.setInputFiles('input[id="student-attachment-input"]', testFilePath);
+
+    // Xác nhận file hiển thị trong danh sách chuẩn bị nộp
+    const fileNameText = path.basename(testFilePath);
+    await expect(page.locator(`.border-gray-200 span:has-text("${fileNameText}")`)).toBeVisible();
+
+    // Nhấn nút "Nộp bài tập"
+    await page.click('button:has-text("Nộp bài tập")');
+
+    // Xác nhận nộp bài thành công (toast message)
+    await expect(page.locator('text=Nộp bài thành công!')).toBeVisible();
+
+    // Xác nhận UI cập nhật thành "Đã nộp"
+    await expect(page.locator('span:has-text("Đã nộp")')).toBeVisible();
+
+    // Xác nhận nút nộp bài không còn hiển thị
+    await expect(page.locator('button:has-text("Nộp bài tập")')).not.toBeVisible();
+
+    // Đóng modal chi tiết bài tập
+    await page.click('button[title="Đóng"]');
+
+    // --- Bổ sung: Học sinh nộp bài trắc nghiệm ---
+    // Tìm bài tập trắc nghiệm E2E
+    const quizCard = page.locator(".border-gray-200", { hasText: "Bài trắc nghiệm E2E" }).first();
+    await expect(quizCard).toBeVisible();
+    await quizCard.click();
+
+    // Chờ loading biến mất (Hướng dẫn hiển thị)
+    await expect(page.locator('h3:has-text("Hướng dẫn")')).toBeVisible();
+
+    // Cố gắng bấm "Nộp bài kiểm tra" ngay khi chưa chọn đáp án nào
+    await page.click('button:has-text("Nộp bài kiểm tra")');
+
+    // Xác nhận có toast thông báo lỗi yêu cầu chọn đáp án
+    await expect(page.locator('text=Vui lòng chọn đáp án trước khi nộp bài.')).toBeVisible();
+
+    // Chọn phương án trả lời đúng
+    const optionLabel = page.locator('label:has-text("Bằng 10")');
+    await expect(optionLabel).toBeVisible();
+    await optionLabel.click();
+
+    // Nhấn "Nộp bài kiểm tra" lần nữa
+    await page.click('button:has-text("Nộp bài kiểm tra")');
+
+    // Xác nhận có modal xác nhận nộp bài hiển thị
+    await expect(page.locator('h2:has-text("Xác nhận nộp bài")')).toBeVisible();
+
+    // Nhấn "Nộp bài" trên ConfirmModal
+    await page.getByRole('button', { name: 'Nộp bài', exact: true }).click();
+
+    // Xác nhận nộp trắc nghiệm thành công
+    await expect(page.locator('text=Nộp bài trắc nghiệm thành công!')).toBeVisible();
+
+    // Kiểm tra UI hiển thị kết quả chấm tự động
+    const scoreLocator = page.locator('.text-2xl.font-extrabold.text-indigo-600');
+    await expect(scoreLocator).toBeVisible();
+    await expect(scoreLocator).toContainText('10');
+    await expect(scoreLocator).toContainText('/ 10');
+    await expect(page.locator('.border-green-300:has-text("Đúng")').first()).toBeVisible();
 
     // Đóng modal chi tiết bài tập
     await page.click('button[title="Đóng"]');

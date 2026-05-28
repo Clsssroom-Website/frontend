@@ -88,6 +88,11 @@ export default function AssignmentDetailView({ assignment, onBack, isEnded = fal
     const answeredCount = Object.keys(selectedAnswers).length;
     const totalCount = quizQuestions.length;
 
+    if (answeredCount === 0) {
+      toast.error("Vui lòng chọn đáp án trước khi nộp bài.");
+      return;
+    }
+
     const performSubmit = async () => {
       setConfirmModal(null);
       try {
