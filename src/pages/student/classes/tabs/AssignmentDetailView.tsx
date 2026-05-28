@@ -601,6 +601,7 @@ export default function AssignmentDetailView({ assignment, onBack, isEnded = fal
                       <span className="text-xs text-gray-400 mt-0.5">PDF, DOCX, ZIP — Max 25MB</span>
                     </div>
                     <input 
+                      id="student-attachment-input"
                       type="file" 
                       multiple 
                       className="hidden" 

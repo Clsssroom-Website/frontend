@@ -32,8 +32,13 @@ axiosClient.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const isAuthRoute = originalRequest.url?.includes('/auth/');
 
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== `${API_BASE}/auth/refresh-token`) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRoute
+    ) {
       originalRequest._retry = true;
       try {
         const { data } = await axios.post(

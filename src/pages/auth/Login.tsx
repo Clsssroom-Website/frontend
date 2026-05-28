@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../../services/auth.service";
 import useAuthStore from "../../store/useAuthStore";
+import { validateLogin } from "../../utils/validation";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -18,16 +19,24 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    const validationError = validateLogin(form);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response: any = await authService.login(form.email, form.password);
+      const response: any = await authService.login(form.email.trim(), form.password);
 
       const token = response?.data?.accessToken;
       const user = response?.data?.user;
 
       if (!token || !user) {
         setError("Không nhận được dữ liệu hợp lệ. Vui lòng thử lại.");
+        setLoading(false);
         return;
       }
 
@@ -76,7 +85,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Địa chỉ Email

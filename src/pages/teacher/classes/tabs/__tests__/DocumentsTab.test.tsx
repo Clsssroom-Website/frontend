@@ -120,8 +120,9 @@ describe('TeacherDocumentsTab Component', () => {
     vi.mocked(documentService.getDocumentsByClassId).mockResolvedValue({ success: true, data: mockDocuments as any });
     vi.mocked(documentService.getDownloadUrl).mockResolvedValue({ success: true, data: 'http://fake.url/download' });
     
-    // Mock click event của HTMLAnchorElement
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    // Giả lập window.location
+    const locationMock = { href: '' };
+    vi.stubGlobal('location', locationMock);
 
     render(<TeacherDocumentsTab classId={classId} />);
     
@@ -137,10 +138,8 @@ describe('TeacherDocumentsTab Component', () => {
 
     await waitFor(() => {
       expect(documentService.getDownloadUrl).toHaveBeenCalledWith('att-1', 'download');
-      expect(clickSpy).toHaveBeenCalled();
+      expect(locationMock.href).toBe('http://fake.url/download');
     });
-    
-    clickSpy.mockRestore();
   });
 
   it('gọi window.open khi bấm Xem trước', async () => {

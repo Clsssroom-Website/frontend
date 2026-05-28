@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../../services/auth.service";
 import type { Role } from "../../types/auth.types";
+import { validateRegister } from "../../utils/validation";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -20,16 +21,17 @@ export default function RegisterPage() {
     setError(null);
     setSuccess(null);
 
-    if (form.password !== form.confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp!");
+    const validationError = validateRegister({ ...form, role });
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     setLoading(true);
     try {
       await authService.register({
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim(),
         password: form.password,
         role: role,
       });
@@ -74,7 +76,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
