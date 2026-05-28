@@ -37,7 +37,7 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
       if (res.success && res.data) {
         window.open(res.data, "_blank");
       }
-    } catch (error) {
+    } catch {
       toast.error("Không thể lấy link tài liệu.");
     }
   };
@@ -46,9 +46,13 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
     try {
       const res = await documentService.getDownloadUrl(attachmentId, "download");
       if (res.success && res.data) {
-        window.location.href = res.data;
+        const link = document.createElement("a");
+        link.href = res.data;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
-    } catch (error) {
+    } catch {
       toast.error("Không thể lấy link tải tài liệu.");
     }
   };
@@ -194,7 +198,7 @@ export default function DocumentsTab({ classId, role = "teacher", isEnded = fals
       if (res.success) {
         setDocuments(res.data);
       }
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải danh sách tài liệu");
     } finally {
       setIsLoading(false);
@@ -225,7 +229,7 @@ export default function DocumentsTab({ classId, role = "teacher", isEnded = fals
       await documentService.deleteDocument(documentToDelete);
       toast.success("Xóa tài liệu thành công!");
       fetchDocuments();
-    } catch (error) {
+    } catch {
       toast.error("Không thể xóa tài liệu");
     } finally {
       setDocumentToDelete(null);
