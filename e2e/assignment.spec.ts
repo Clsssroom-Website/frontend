@@ -66,13 +66,13 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     // Điền thông tin tạo lớp học
     const timestamp = Date.now();
     createdClassName = `Lớp E2E Test ${timestamp}`;
-    await page.fill('input[placeholder="e.g. Quản lý dự án"]', createdClassName);
-    await page.fill('textarea[placeholder="Class description..."]', "Lớp học tự động tạo bằng Playwright E2E");
-    await page.fill('input[placeholder="e.g. 2A33"]', "Phòng E2E");
-    await page.fill('input[placeholder="e.g. HK1-2025"]', "HK Test");
+    await page.fill('input[placeholder="VD: Công nghệ phần mềm"]', createdClassName);
+    await page.fill('textarea[placeholder="Mô tả về lớp học..."]', "Lớp học tự động tạo bằng Playwright E2E");
+    await page.fill('input[placeholder="VD: A102"]', "Phòng E2E");
+    await page.fill('input[placeholder="VD: HK2-2026"]', "HK Test");
 
-    // Click nút Create Class
-    await page.click('button:has-text("Create Class")');
+    // Click nút Tạo lớp học
+    await page.click('button:has-text("Tạo lớp học")');
 
     // Chờ lớp học mới xuất hiện trên danh sách
     const classCard = page.locator(`h3:has-text("${createdClassName}")`).first();

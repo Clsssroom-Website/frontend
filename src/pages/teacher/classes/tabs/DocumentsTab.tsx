@@ -46,11 +46,7 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
     try {
       const res = await documentService.getDownloadUrl(attachmentId, "download");
       if (res.success && res.data) {
-        const link = document.createElement("a");
-        link.href = res.data;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        window.location.href = res.data;
       }
     } catch {
       toast.error("Không thể lấy link tải tài liệu.");
