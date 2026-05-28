@@ -64,6 +64,12 @@ describe('documentService', () => {
       expect(api.get).toHaveBeenCalledWith(`/documents/class/${mockClassId}`);
       expect(result).toEqual(mockResponse);
     });
+
+    it('bắn lỗi nếu không lấy được danh sách', async () => {
+      vi.mocked(api.get).mockRejectedValueOnce(new Error('Fetch failed'));
+
+      await expect(documentService.getDocumentsByClassId(mockClassId)).rejects.toThrow('Fetch failed');
+    });
   });
 
   describe('getDownloadUrl', () => {
@@ -96,6 +102,12 @@ describe('documentService', () => {
       expect(api.get).toHaveBeenCalledWith(`/documents/attachment/${mockAttachmentId}/download?action=download`);
       expect(result).toEqual(mockResponse);
     });
+
+    it('bắn lỗi nếu không lấy được URL tải về', async () => {
+      vi.mocked(api.get).mockRejectedValueOnce(new Error('Failed to get presigned URL'));
+
+      await expect(documentService.getDownloadUrl(mockAttachmentId)).rejects.toThrow('Failed to get presigned URL');
+    });
   });
 
   describe('updateDocument', () => {
@@ -116,6 +128,14 @@ describe('documentService', () => {
       });
       expect(result).toEqual(mockResponse);
     });
+
+    it('bắn lỗi nếu chỉnh sửa thất bại', async () => {
+      const formData = new FormData();
+      formData.append('title', 'Updated');
+      vi.mocked(api.put).mockRejectedValueOnce(new Error('Update failed'));
+
+      await expect(documentService.updateDocument(mockDocumentId, formData)).rejects.toThrow('Update failed');
+    });
   });
 
   describe('deleteDocument', () => {
@@ -131,6 +151,12 @@ describe('documentService', () => {
 
       expect(api.delete).toHaveBeenCalledWith(`/documents/${mockDocumentId}`);
       expect(result).toEqual(mockResponse);
+    });
+
+    it('bắn lỗi nếu xóa thất bại', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce(new Error('Delete failed'));
+
+      await expect(documentService.deleteDocument(mockDocumentId)).rejects.toThrow('Delete failed');
     });
   });
 });
