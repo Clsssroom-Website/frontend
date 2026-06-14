@@ -8,7 +8,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run --reporter=verbose"
+    "test": "vitest run --reporter=verbose",
+    "test:e2e": "playwright test",
+    "test:ui": "playwright test --project=chromium",
+    "test:headed": "playwright test --project=chromium --headed",
+    "test:report": "playwright show-report",
+    "test:ui-mode": "playwright test --ui"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

@@ -25,7 +25,7 @@ export function JoinClassModal({ isOpen, onClose, onSuccess }: JoinClassModalPro
 
     setLoading(true);
     try {
-      const data: any = await classroomService.joinClass(joinCode.trim());
+      const data = (await classroomService.joinClass(joinCode.trim())) as { success?: boolean; message?: string };
       
       if (data && data.success) {
         toast.success("Successfully joined the classroom!");
@@ -35,7 +35,9 @@ export function JoinClassModal({ isOpen, onClose, onSuccess }: JoinClassModalPro
       }
     } catch (error) {
       console.error("Join class error:", error);
-      toast.error("An error occurred. Please try again later.");
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      const serverMessage = err.response?.data?.message || err.message || "An error occurred. Please try again later.";
+      toast.error(serverMessage);
     } finally {
       setLoading(false);
     }
