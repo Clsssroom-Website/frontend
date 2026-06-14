@@ -26,7 +26,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
           role: "teacher",
         },
       });
-    } catch (e) {
+    } catch {
       // Bỏ qua lỗi nếu tài khoản đã tồn tại
     }
     // Đăng ký tài khoản học sinh dùng để test đăng nhập
@@ -39,7 +39,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
           role: "student",
         },
       });
-    } catch (e) {
+    } catch {
       // Bỏ qua lỗi nếu tài khoản đã tồn tại
     }
   });
@@ -57,7 +57,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
 
   test("Setup: Tạo lớp học mới dùng để test", async ({ page }) => {
     await page.goto(`${BASE_URL}/teacher/classes`);
-    
+
     // Đợi trang load và bấm nút Add Classroom
     const addBtn = page.locator('button:has-text("Add Classroom")');
     await expect(addBtn).toBeVisible();
@@ -71,7 +71,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     await page.fill('input[placeholder="VD: A102"]', "Phòng E2E");
     await page.fill('input[placeholder="VD: HK2-2026"]', "HK Test");
 
-    // Click nút Create Class
+    // Click nút Tạo lớp học
     await page.click('button:has-text("Tạo lớp học")');
 
     // Chờ lớp học mới xuất hiện trên danh sách
@@ -177,7 +177,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     const timestamp = Date.now();
     const quizTitle = `Bài trắc nghiệm E2E - ${timestamp}`;
     await page.fill('input[id="assignmentTitleInput"]', quizTitle);
-    
+
     // Chọn loại hình Trắc nghiệm (Click nhãn label để hoạt động tốt hơn)
     await page.locator('label:has-text("Trắc nghiệm")').click();
 
@@ -198,7 +198,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     // Điền câu hỏi và phương án trả lời (Sử dụng selector .border-indigo-100.p-4 để tránh trùng với header)
     const qContainer = page.locator(".border-indigo-100.p-4").first();
     await expect(qContainer).toBeVisible();
-    
+
     await qContainer.locator('input[placeholder="Nhập nội dung câu hỏi..."]').fill("E2E Test: 5 + 5 bằng bao nhiêu?");
     await qContainer.locator('input[placeholder="Phương án 1"]').fill("Bằng 10");
     await qContainer.locator('input[placeholder="Phương án 2"]').fill("Bằng 12");
@@ -230,7 +230,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
 
     // Trường hợp 1: Để trống tiêu đề
     await page.fill('input[id="assignmentTitleInput"]', "");
-    
+
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 2);
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -247,7 +247,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     // Điền tiêu đề, chọn trắc nghiệm và test lỗi thiếu câu hỏi/đáp án
     await page.fill('input[id="assignmentTitleInput"]', "Bài trắc nghiệm lỗi E2E");
     await page.locator('label:has-text("Trắc nghiệm")').click();
-    
+
     // Chưa thêm câu hỏi nào
     await page.click('button:has-text("Giao bài tập")');
     await expect(errorAlert).toBeVisible();
@@ -257,7 +257,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     await page.locator("button:has-text('Tạo câu hỏi'), button:has-text('Thêm câu hỏi')").first().click();
     const qContainer = page.locator(".border-indigo-100.p-4").first();
     await expect(qContainer).toBeVisible();
-    
+
     await qContainer.locator('input[placeholder="Nhập nội dung câu hỏi..."]').fill("E2E Test validation: 1 + 1 = ?");
     await qContainer.locator('input[placeholder="Phương án 1"]').fill("2");
     await qContainer.locator('input[placeholder="Phương án 2"]').fill("3");
@@ -285,10 +285,10 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
     // Tìm bài tập tự luận đã có (hoặc tạo nhanh một bài tập mới để test)
     const cards = page.locator(".border-gray-200");
     const count = await cards.count();
-    
+
     let targetCard = null;
     let originalTitle = "";
-    
+
     for (let i = 0; i < count; i++) {
       const card = cards.nth(i);
       const isEssay = await card.locator('span:has-text("Nộp tệp")').isVisible();
@@ -379,6 +379,7 @@ test.describe("Teacher Assignment Management - End to End Tests", () => {
       const response = await route.fetch();
       const json = await response.json();
       if (json.success && Array.isArray(json.data)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         json.data = json.data.map((asgn: any) => {
           if (asgn.title.includes("[Đã chỉnh sửa]")) {
             return { ...asgn, totalSubmissions: 1 };
