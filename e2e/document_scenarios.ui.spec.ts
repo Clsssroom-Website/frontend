@@ -4,24 +4,19 @@
  * Chạy tuần tự (serial) để tái sử dụng lớp học được tạo tự động giữa các testcase.
  */
 
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 const TEACHER = {
-  email: "teacher.test@smartclass.dev",
-  password: "Test@1234",
+  email: "teacher_test_e2e@gmail.com",
+  password: "Password123",
 };
 
 const STUDENT = {
-  email: "student.test@smartclass.dev",
-  password: "Test@1234",
+  email: "student_test_e2e@gmail.com",
+  password: "Password123",
 };
 
-const nodeBuffer = (globalThis as unknown as {
-  Buffer: {
-    alloc: (size: number) => unknown;
-    from: (data: string) => unknown;
-  };
-}).Buffer;
+const nodeBuffer = Buffer;
 
 const ts = Date.now();
 const testClassName = `Doc Test Class ${ts}`;
@@ -34,9 +29,9 @@ async function loginAsTeacher(page: Page) {
   await page.goto("/login");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.locator("#email").fill(TEACHER.email);
-  await page.locator("#password").fill(TEACHER.password);
-  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await page.fill('input[name="email"]', TEACHER.email);
+  await page.fill('input[name="password"]', TEACHER.password);
+  await page.click('button[type="submit"]');
   await expect(page).toHaveURL(/\/teacher\/dashboard/, { timeout: 8000 });
   await expect(page.locator(".animate-spin")).toHaveCount(0, { timeout: 10000 });
 }
@@ -46,9 +41,9 @@ async function loginAsStudent(page: Page) {
   await page.goto("/login");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.locator("#email").fill(STUDENT.email);
-  await page.locator("#password").fill(STUDENT.password);
-  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await page.fill('input[name="email"]', STUDENT.email);
+  await page.fill('input[name="password"]', STUDENT.password);
+  await page.click('button[type="submit"]');
   await expect(page).toHaveURL(/\/student\/dashboard/, { timeout: 8000 });
   await expect(page.locator(".animate-spin")).toHaveCount(0, { timeout: 10000 });
 }
@@ -68,9 +63,39 @@ async function navigateToClassDocuments(page: Page) {
 
 // ── Test Suite ────────────────────────────────────────────────────────────────
 
-test.describe("📝 E2E UI Tests — Kịch bản quản lý tài liệu", () => {
+test.describe("UI Tests — Kịch bản quản lý tài liệu", () => {
   // Chạy tuần tự để truyền Class ID & dữ liệu tài liệu qua lại giữa các TC
   test.describe.configure({ mode: "serial" });
+
+  test.beforeAll(async ({ request }) => {
+    // Đăng ký tài khoản học sinh dùng để test đăng nhập
+    try {
+      await request.post("http://localhost:5000/api/v1/auth/register", {
+        data: {
+          name: "Học sinh Seed E2E",
+          email: "student_test_e2e@gmail.com",
+          password: "Password123",
+          role: "student",
+        },
+      });
+    } catch {
+      // Bỏ qua lỗi nếu tài khoản đã tồn tại
+    }
+
+    // Đăng ký tài khoản giáo viên dùng để test đăng nhập
+    try {
+      await request.post("http://localhost:5000/api/v1/auth/register", {
+        data: {
+          name: "Giáo viên Seed E2E",
+          email: "teacher_test_e2e@gmail.com",
+          password: "Password123",
+          role: "teacher",
+        },
+      });
+    } catch {
+      // Bỏ qua lỗi nếu tài khoản đã tồn tại
+    }
+  });
 
   test.beforeEach(({ page }) => {
     page.on("console", msg => console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`));

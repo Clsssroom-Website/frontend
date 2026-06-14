@@ -13,7 +13,8 @@
     "test:ui": "playwright test --project=chromium",
     "test:headed": "playwright test --project=chromium --headed",
     "test:report": "playwright show-report",
-    "test:ui-mode": "playwright test --ui"
+    "test:ui-mode": "playwright test --ui",
+    "test:setup": "node ../e2e/setup-test-accounts.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
