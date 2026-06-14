@@ -1,1 +1,33 @@
-Mock PDF content for assignment upload test.
+%PDF-1.5
+%µµµµ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [ 3 0 R ] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << >> /MediaBox [ 0 0 595.2755 841.8897 ] /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 43 >>
+stream
+BT
+/F1 12 Tf
+72 712 Td
+(Dummy PDF for E2E testing) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000015 00000 n 
+0000000074 00000 n 
+0000000140 00000 n 
+0000000253 00000 n 
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+349
+%%EOF
