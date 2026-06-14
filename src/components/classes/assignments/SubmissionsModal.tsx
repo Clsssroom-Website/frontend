@@ -224,7 +224,7 @@ export default function SubmissionsModal({ isOpen, classId, assignment, onClose,
                         {editingSubmissionId === sub.submissionId ? null : sub.grade ? (
                           <div className="text-right">
                             <div className="text-lg font-bold text-gray-800">{sub.grade.score}<span className="text-xs text-gray-400">/10</span></div>
-                            {!isEnded && (
+                            {!isQuiz && !isEnded && (
                               <button
                                 onClick={() => startEditing(sub)}
                                 className="text-[10px] text-gray-500 hover:text-gray-700 underline mt-0.5"

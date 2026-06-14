@@ -41,12 +41,12 @@ const makeStudent = (
 
 const defaultProps = { classId: 'class-001' };
 
-// ─── TC06: Quản lý điểm số ────────────────────────────────────────────────────
-describe('TC06 – Quản lý điểm số (GradesTab)', () => {
+// ─── TC_SCR_UT: Quản lý điểm số – Kiểm thử mức đơn vị (Vitest + RTL) ──────────
+describe('TC_SCR_UT – Quản lý điểm số (GradesTab)', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  // TC06_001
-  it('TC01 – Tải bảng điểm tổng hợp thành công', async () => {
+  // TC_SCR_UT_001
+  it('TC_SCR_UT_001 – Tải bảng điểm tổng hợp thành công', async () => {
     const students = [
       makeStudent('s1', 'Nguyễn Văn A', 'a@test.com',
         [{ assignmentId: 'a1', score: 8, status: 'graded' }], 8),
@@ -65,8 +65,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_002
-  it('TC02 – Hiển thị điểm trung bình không trọng số (8+9+7)/3 = 8', async () => {
+  // TC_SCR_UT_002
+  it('TC_SCR_UT_002 – Hiển thị điểm trung bình không trọng số (8+9+7)/3 = 8', async () => {
     const students = [
       makeStudent('s1', 'Học sinh A', 'a@test.com',
         [
@@ -88,8 +88,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_003
-  it('TC03 – Bài quá hạn không nộp hiển thị badge "Không nộp" và điểm 0', async () => {
+  // TC_SCR_UT_003
+  it('TC_SCR_UT_003 – Bài quá hạn không nộp hiển thị badge "Không nộp" và điểm 0', async () => {
     const students = [
       makeStudent('s1', 'Học sinh B', 'b@test.com',
         [
@@ -112,8 +112,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_004
-  it('TC04 – Điểm TB làm tròn 2 chữ số (26/3 = 8.67)', async () => {
+  // TC_SCR_UT_004
+  it('TC_SCR_UT_004 – Điểm TB làm tròn 2 chữ số (26/3 = 8.67)', async () => {
     const students = [
       makeStudent('s1', 'Học sinh C', 'c@test.com',
         [
@@ -135,8 +135,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_005
-  it('TC05 – Nút "Xuất file CSV" chỉ hiện khi có học sinh và bài tập', async () => {
+  // TC_SCR_UT_005
+  it('TC_SCR_UT_005 – Nút "Xuất file CSV" chỉ hiện khi có học sinh và bài tập', async () => {
     const students = [
       makeStudent('s1', 'Học sinh A', 'a@test.com',
         [{ assignmentId: 'a1', score: 8, status: 'graded' }], 8),
@@ -153,8 +153,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_006
-  it('TC06 – Hàm buildCSV bao từng giá trị bằng nháy kép', () => {
+  // TC_SCR_UT_006
+  it('TC_SCR_UT_006 – Hàm buildCSV bao từng giá trị bằng nháy kép', () => {
     // Unit test thuần: kiểm tra logic tạo chuỗi CSV
     const headers = ['STT', 'Họ và tên', 'Email', 'Tiểu luận 1', 'ĐTB'];
     const row = [1, 'Nguyễn Văn A', 'a@test.com', 8.5, 8.5];
@@ -164,8 +164,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     expect(headers.join(',')).toBe('STT,Họ và tên,Email,Tiểu luận 1,ĐTB');
   });
 
-  // TC06_007
-  it('TC07 – Nút Xuất CSV ẩn khi lớp không có học sinh', async () => {
+  // TC_SCR_UT_007
+  it('TC_SCR_UT_007 – Nút Xuất CSV ẩn khi lớp không có học sinh', async () => {
     vi.mocked(classroomService.getClassGrades).mockResolvedValue({
       success: true,
       data: { assignments: mockAssignments, students: [] },
@@ -179,8 +179,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_008 – Nút Xuất CSV ẩn khi lớp không có bài tập
-  it('TC08 – Nút Xuất CSV ẩn khi lớp chưa có bài tập', async () => {
+  // TC_SCR_UT_008 – Nút Xuất CSV ẩn khi lớp không có bài tập
+  it('TC_SCR_UT_008 – Nút Xuất CSV ẩn khi lớp chưa có bài tập', async () => {
     vi.mocked(classroomService.getClassGrades).mockResolvedValue({
       success: true,
       data: { assignments: [], students: [] },
@@ -194,8 +194,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_009 – Xử lý lỗi API
-  it('TC09 – Hiển thị lỗi khi API getClassGrades thất bại', async () => {
+  // TC_SCR_UT_009 – Xử lý lỗi API
+  it('TC_SCR_UT_009 – Hiển thị lỗi khi API getClassGrades thất bại', async () => {
     vi.mocked(classroomService.getClassGrades).mockRejectedValue(
       new Error('Lỗi kết nối. Vui lòng thử lại.')
     );
@@ -207,8 +207,8 @@ describe('TC06 – Quản lý điểm số (GradesTab)', () => {
     });
   });
 
-  // TC06_010
-  it('TC10 – Tìm kiếm client-side lọc đúng học sinh theo tên', async () => {
+  // TC_SCR_UT_010
+  it('TC_SCR_UT_010 – Tìm kiếm client-side lọc đúng học sinh theo tên', async () => {
     const students = [
       makeStudent('s1', 'Nguyễn Văn A', 'a@test.com',
         [{ assignmentId: 'a1', score: 8, status: 'graded' }], 8),

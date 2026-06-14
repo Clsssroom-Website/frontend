@@ -62,7 +62,7 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
   return (
     <div className="border border-gray-100 rounded-xl bg-white shadow-sm hover:shadow-md transition overflow-hidden">
       {/* Main row */}
-      <div 
+      <div
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/30 transition duration-150 select-none"
         onClick={() => setExpanded(!expanded)}
       >
@@ -91,19 +91,19 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
             </div>
           </div>
         </div>
-        
+
         {/* Toggle & Action buttons */}
         <div className="flex items-center gap-1.5 ml-4 shrink-0" onClick={(e) => e.stopPropagation()}>
           {isTeacher && (
             <div className="flex items-center gap-1">
-              <button 
+              <button
                 onClick={() => onEdit(doc)}
                 className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition cursor-pointer"
                 title="Chỉnh sửa tài liệu"
               >
                 <Edit size={16} />
               </button>
-              <button 
+              <button
                 onClick={() => onDelete(doc.documentId)}
                 className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
                 title="Xóa tài liệu"
@@ -112,7 +112,7 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
               </button>
             </div>
           )}
-          <div 
+          <div
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition cursor-pointer"
             onClick={() => setExpanded(!expanded)}
           >
@@ -145,7 +145,7 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
 
                   <div className="flex items-center gap-2 shrink-0 justify-end">
                     {isPdf && (
-                      <button 
+                      <button
                         onClick={() => handlePreview(att.attachmentId)}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-indigo-600 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-md transition cursor-pointer"
                         title="Xem trước trên trình duyệt"
@@ -154,8 +154,8 @@ const DocumentItem = ({ doc, isTeacher, onEdit, onDelete }: DocumentItemProps) =
                         <span>Xem trước</span>
                       </button>
                     )}
-                    
-                    <button 
+
+                    <button
                       onClick={() => handleDownload(att.attachmentId)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm hover:shadow transition cursor-pointer"
                     >
@@ -243,7 +243,7 @@ export default function DocumentsTab({ classId, role = "teacher", isEnded = fals
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-800">Tài liệu bài giảng</h2>
         {isTeacher && !isEnded && (
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm hover:shadow-md cursor-pointer"
           >
@@ -262,17 +262,17 @@ export default function DocumentsTab({ classId, role = "teacher", isEnded = fals
           <FileText size={48} className="text-gray-300" />
           <p className="text-lg font-medium text-gray-600">Chưa có tài liệu nào</p>
           <p className="text-sm text-center px-4">
-            {isTeacher 
-              ? 'Bấm "Upload tài liệu" để chia sẻ tài liệu với học sinh.' 
+            {isTeacher
+              ? 'Bấm "Upload tài liệu" để chia sẻ tài liệu với học sinh.'
               : 'Tài liệu bài giảng từ giáo viên sẽ xuất hiện ở đây.'}
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {documents.map((doc) => (
-            <DocumentItem 
-              key={doc.documentId} 
-              doc={doc} 
+            <DocumentItem
+              key={doc.documentId}
+              doc={doc}
               isTeacher={isTeacher && !isEnded}
               onEdit={handleEdit}
               onDelete={handleDeleteTrigger}
@@ -282,7 +282,7 @@ export default function DocumentsTab({ classId, role = "teacher", isEnded = fals
       )}
 
       {isTeacher && (
-        <UploadDocumentModal 
+        <UploadDocumentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           classId={classId}
@@ -291,7 +291,7 @@ export default function DocumentsTab({ classId, role = "teacher", isEnded = fals
       )}
 
       {isTeacher && selectedDocument && (
-        <EditDocumentModal 
+        <EditDocumentModal
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);

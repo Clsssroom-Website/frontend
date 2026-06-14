@@ -59,8 +59,8 @@ const openGradeForm = async () => {
   await waitFor(() => expect(screen.getByPlaceholderText('8.5')).toBeInTheDocument());
 };
 
-// ─── TC05: Chấm điểm bài tập ─────────────────────────────────────────────────
-describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
+// ─── TC_GRD_UT: Chấm điểm bài tập – Kiểm thử mức đơn vị (Vitest + RTL) ────────
+describe('TC_GRD_UT – Chấm điểm bài tập (SubmissionsModal)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(assignmentService.getSubmissions).mockResolvedValue({
@@ -69,8 +69,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_001
-  it('TC01 – Chấm điểm hợp lệ với mức điểm cao nhất (score=10)', async () => {
+  // TC_GRD_UT_001
+  it('TC_GRD_UT_001 – Chấm điểm hợp lệ với mức điểm cao nhất (score=10)', async () => {
     vi.mocked(assignmentService.gradeSubmission).mockResolvedValue({ success: true, message: 'Chấm điểm thành công!', data: undefined });
 
     render(<SubmissionsModal {...defaultProps} />);
@@ -90,8 +90,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_002
-  it('TC02 – Chấm điểm tối thiểu (score=0) được lưu thành công', async () => {
+  // TC_GRD_UT_002
+  it('TC_GRD_UT_002 – Chấm điểm tối thiểu (score=0) được lưu thành công', async () => {
     vi.mocked(assignmentService.gradeSubmission).mockResolvedValue({ success: true, message: 'Chấm điểm thành công!', data: undefined });
 
     render(<SubmissionsModal {...defaultProps} />);
@@ -108,8 +108,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_003
-  it('TC03 – Điểm thập phân được làm tròn 2 chữ số trước khi gửi (8.75)', async () => {
+  // TC_GRD_UT_003
+  it('TC_GRD_UT_003 – Điểm thập phân được làm tròn 2 chữ số trước khi gửi (8.75)', async () => {
     vi.mocked(assignmentService.gradeSubmission).mockResolvedValue({ success: true, message: '', data: undefined });
 
     render(<SubmissionsModal {...defaultProps} />);
@@ -126,8 +126,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_004
-  it('TC04 – Nhập điểm âm (-1.5): hiện lỗi, không gọi API', async () => {
+  // TC_GRD_UT_004
+  it('TC_GRD_UT_004 – Nhập điểm âm (-1.5): hiện lỗi, không gọi API', async () => {
     render(<SubmissionsModal {...defaultProps} />);
     await openGradeForm();
 
@@ -140,8 +140,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     expect(assignmentService.gradeSubmission).not.toHaveBeenCalled();
   });
 
-  // TC05_005
-  it('TC05 – Nhập điểm vượt trần (11.0): hiện lỗi, không gọi API', async () => {
+  // TC_GRD_UT_005
+  it('TC_GRD_UT_005 – Nhập điểm vượt trần (11.0): hiện lỗi, không gọi API', async () => {
     render(<SubmissionsModal {...defaultProps} />);
     await openGradeForm();
 
@@ -154,8 +154,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     expect(assignmentService.gradeSubmission).not.toHaveBeenCalled();
   });
 
-  // TC05_006
-  it('TC06 – Nhập ký tự chữ vào ô điểm: NaN bị chặn, không gọi API', async () => {
+  // TC_GRD_UT_006
+  it('TC_GRD_UT_006 – Nhập ký tự chữ vào ô điểm: NaN bị chặn, không gọi API', async () => {
     render(<SubmissionsModal {...defaultProps} />);
     await openGradeForm();
 
@@ -168,8 +168,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     expect(assignmentService.gradeSubmission).not.toHaveBeenCalled();
   });
 
-  // TC05_007
-  it('TC07 – Chấm lại (regrading): gọi API với điểm mới 7.5', async () => {
+  // TC_GRD_UT_007
+  it('TC_GRD_UT_007 – Chấm lại (regrading): gọi API với điểm mới 7.5', async () => {
     const submissionWithGrade: Submission = {
       ...mockSubmission,
       grade: { gradeId: 'grade-001', score: 9.0, comment: 'Tốt', gradedAt: '2026-05-01T11:00:00Z' },
@@ -196,8 +196,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_008
-  it('TC08 – Nhận xét chứa emoji và ký tự Unicode được gửi đúng', async () => {
+  // TC_GRD_UT_008
+  it('TC_GRD_UT_008 – Nhận xét chứa emoji và ký tự Unicode được gửi đúng', async () => {
     vi.mocked(assignmentService.gradeSubmission).mockResolvedValue({ success: true, message: '', data: undefined });
 
     render(<SubmissionsModal {...defaultProps} />);
@@ -218,8 +218,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_009
-  it('TC09 – Nhận xét vượt 1000 ký tự: bộ đếm đỏ, không gọi API', async () => {
+  // TC_GRD_UT_009
+  it('TC_GRD_UT_009 – Nhận xét vượt 1000 ký tự: bộ đếm đỏ, không gọi API', async () => {
     const toast = (await import('react-hot-toast')).default;
 
     render(<SubmissionsModal {...defaultProps} />);
@@ -244,8 +244,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     expect(assignmentService.gradeSubmission).not.toHaveBeenCalled();
   });
 
-  // TC05_010 – BVA: comment đúng 1000 ký tự (biên trong hợp lệ)
-  it('TC10 – Comment đúng 1000 ký tự (biên trong): lưu thành công, bộ đếm không đỏ', async () => {
+  // TC_GRD_UT_010 – BVA: comment đúng 1000 ký tự (biên trong hợp lệ)
+  it('TC_GRD_UT_010 – Comment đúng 1000 ký tự (biên trong): lưu thành công, bộ đếm không đỏ', async () => {
     vi.mocked(assignmentService.gradeSubmission).mockResolvedValue({ success: true, message: 'Chấm điểm thành công!', data: undefined });
 
     render(<SubmissionsModal {...defaultProps} />);
@@ -272,8 +272,8 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
     });
   });
 
-  // TC05_011
-  it('TC11 – Bài trắc nghiệm: nút Chấm điểm không hiển thị', async () => {
+  // TC_GRD_UT_011
+  it('TC_GRD_UT_011 – Bài trắc nghiệm: nút Chấm điểm và Sửa điểm không hiển thị', async () => {
     const quizAssignment: Assignment = { ...mockAssignment, typeAssignment: 'MULTIPLE_CHOICE' };
     const quizSubmission: Submission = {
       ...mockSubmission,
@@ -286,10 +286,11 @@ describe('TC05 – Chấm điểm bài tập (SubmissionsModal)', () => {
 
     await waitFor(() => expect(screen.getByText('Nguyễn Văn A')).toBeInTheDocument());
     expect(screen.queryByText('Chấm điểm')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sửa điểm')).not.toBeInTheDocument();
   });
 
-  // TC05_013 – Bài trắc nghiệm: Hiển thị điểm số trắc nghiệm tự động và danh sách câu hỏi khi click xem
-  it('TC12 – Bài trắc nghiệm: hiển thị điểm tự động và danh sách câu trả lời chi tiết', async () => {
+  // TC_GRD_UT_012 – Bài trắc nghiệm: Hiển thị điểm số trắc nghiệm tự động và danh sách câu hỏi khi click xem
+  it('TC_GRD_UT_012 – Bài trắc nghiệm: hiển thị điểm tự động và danh sách câu trả lời chi tiết', async () => {
     const quizAssignment: Assignment = { ...mockAssignment, typeAssignment: 'MULTIPLE_CHOICE' };
     const quizSubmission: Submission = {
       ...mockSubmission,
