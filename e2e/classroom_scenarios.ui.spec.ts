@@ -58,32 +58,20 @@ test.describe("UI Tests — Kịch bản quản lý lớp học", () => {
   test.describe.configure({ mode: "serial" });
 
   test.beforeAll(async ({ request }) => {
-    // Đăng ký tài khoản học sinh dùng để test đăng nhập
+    // Đăng ký tài khoản nếu chưa có
     try {
       await request.post("http://localhost:5000/api/v1/auth/register", {
-        data: {
-          name: "Học sinh Seed E2E",
-          email: "student_test_e2e@gmail.com",
-          password: "Password123",
-          role: "student",
-        },
+        data: { name: "Giáo viên Seed E2E", email: "teacher_test_e2e@gmail.com", password: "Password123", role: "teacher" },
       });
     } catch {
-      // Bỏ qua lỗi nếu tài khoản đã tồn tại
+      // bỏ qua nếu tài khoản đã tồn tại
     }
-
-    // Đăng ký tài khoản giáo viên dùng để test đăng nhập
     try {
       await request.post("http://localhost:5000/api/v1/auth/register", {
-        data: {
-          name: "Giáo viên Seed E2E",
-          email: "teacher_test_e2e@gmail.com",
-          password: "Password123",
-          role: "teacher",
-        },
+        data: { name: "Học sinh Seed E2E", email: "student_test_e2e@gmail.com", password: "Password123", role: "student" },
       });
     } catch {
-      // Bỏ qua lỗi nếu tài khoản đã tồn tại
+      // bỏ qua nếu tài khoản đã tồn tại
     }
   });
 
